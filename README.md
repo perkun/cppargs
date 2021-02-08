@@ -2,7 +2,7 @@
 
 Simple library for handling command line arguments in C++.
 
-See `src/cppargs.cpp` for example usage.
+See `src/main.cpp` for example usage.
 
 # TODO:
 
