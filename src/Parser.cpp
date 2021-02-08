@@ -322,6 +322,21 @@ void Parser::compose_help()
     ss << "Usage:" << endl;
     ss << "\t" << program_name << " [FLAGS] [OPTIONS]";
 
+    for (Option &opt : defined_args.options)
+    {
+        if (!opt.required)
+            continue;
+        ss << " --" << opt.long_name << " VALUE";
+    }
+
+    for (VectorOption &opt : defined_args.vec_options)
+    {
+        if (!opt.required)
+            continue;
+        ss << " --" << opt.long_name << " " << opt.num_values << " VALUES";
+    }
+
+
     for (int i = 0; i < defined_args.positionals.size(); i++)
     {
         ss << " " << defined_args.positionals[i].long_name;

@@ -1,4 +1,4 @@
-PROGRAM_NAME = args
+PROGRAM_NAME = cppargs
 CC = g++
 SRCDIR = src
 BUILDDIR = build
