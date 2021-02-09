@@ -1,8 +1,6 @@
 #ifndef ARGUMENT_H_
 #define ARGUMENT_H_
 
-#include <iostream>
-#include <stdio.h>
 #include <vector>
 #include <string>
 
@@ -13,7 +11,6 @@ class Argument
 public:
 	string short_name;
 	string long_name, description;
-
 };
 
 

@@ -33,7 +33,7 @@ will have `true` value. Otherwise, `false`.
 
 ## Options with a value
 
-Options have a value. Define them as such:
+Options have a value. Define them with the following `Parser` methods:
 
 ```cpp
 	void add_option(char short_name, string long_name, string description, bool requred, string default_value);
@@ -114,17 +114,9 @@ templated methods of a `Args` class object:
 
 ## help
 
-Help flag is automatically added: `-h` and `--help`. You can print help message
-in two ways:
-
-```cpp
-	// form Parser
-	parser.print_help();
-	// or from Args
-	if (args["h"])
-		args.print_help();
-```
-
+Help flag (`-h`, `--help`) is added automatically. When it is given by the user,
+help gets printed and program exits. You can also manually print help with
+`parser.print_help` method.
 
 # TODO:
 

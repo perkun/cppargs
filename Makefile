@@ -27,9 +27,6 @@ clean:
 		@echo " Cleaning...";
 		@echo " $(RM) -r $(BUILDDIR) $(TARGET)"; $(RM) -r $(BUILDDIR) $(TARGET)
 
-install:
-	@cp $(TARGET) /usr/local/bin/
-
 shared_library:
 		$(CC)  $(CFLAGS) -fPIC $(HEADERS) $(SOURCES) $(LIB)
 		$(CC) -shared -o bin/lib$(PROGRAM_NAME).so $(SHARED_OBJECTS) $(LIBS)

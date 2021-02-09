@@ -1,56 +1,73 @@
+#include "Parser.h"
 #include <iostream>
 #include <stdio.h>
-#include "Parser.h"
 
 using namespace std;
 
 int main(int argc, char *argv[])
 {
-	Parser parser;
+    Parser parser;
 
-	parser.add_description("Program for testing the small library for handling arguments");
+    // description for the program
+    parser.add_description(
+        "Program for testing the small library for handling arguments");
 
-	parser.add_flag('d', "dupa", "jakaś fajna taka");
-	parser.add_flag("cycki", "jakieś takie też fajne");
+    // flags
+    parser.add_flag('c', "count", "count something awesome");
+    parser.add_flag("verbose", "print extra stuff");
 
-	parser.add_option("declination", "declination", false, "");
+    // option with a default value
+    parser.add_option('i', "input", "input file name", false, "in.txt");
 
-	parser.add_option('f', "file", "input file name", false, "");
-	parser.add_option("output", "output file name", true, "out.txt");
+    // required option, only long name specified
+    parser.add_option("output", "output file name", true, "");
 
-	parser.add_vec_option('v', "vector", "positions", 3, false);
-	parser.add_vec_option("bla", "positions", 5, true);
+    parser.add_vec_option('p', "pos", "specify position's xyz coordinates", 3,
+                          false);
 
-	parser.add_positional("Imię", "Twoje Imię, ziom", 1);
-	parser.add_positional("Nazwisko", "Twoje nazwisko, ziom", 2);
-
-	parser.add_positional_list("files", "list of files"); // at the end
-
-	Args args = parser.parse_args(argc, argv);
-
-
-	if (args["help"])
-	{
-		args.print_help();
-		cout << "----------------------------------------" << endl;
-	}
+    parser.add_positional("name", "Your name", 1);
+    parser.add_positional("last", "Youe last name", 2);
 
 
-	if (args["declination"])
-	{
-		int dec = args.get_value<int>("declination");
-		cout << dec << endl;
-	}
+    parser.add_positional_list("FILES", "list of files"); // at the end
 
-	vector<double> pos = args.get_vec_values<double>("v");
-	for (double d: pos)
-		cout << d << endl;
-
-	cout << "positionals:" << endl;
-	for (string s: args.get_all_positionals<string>())
-		cout << s << endl;
+    // -h, --help flag is added automatically
+    // Help is printed when it is given by the user
 
 
-	return 0;
+    // after defining everything, parse args
+    Args args = parser.parse_args(argc, argv);
+
+    // check if arument was given
+    // a flag
+    if (args["count"])
+        cout << "You can count on me!" << endl;
+    // others too
+    if (args["pos"])
+        cout << "position specified" << endl;
+
+    string in_filename = args.get_value<string>("input");
+    cout << in_filename << endl;
+
+    vector<double> pos = args.get_vec_values<double>("pos");
+    for (double d : pos)
+        cout << d << ", ";
+    cout << endl;
+
+    // get first positional argument
+    string name = args.get_positional<string>(1);
+
+    // or by name (if defined earlier)
+    // TODO:
+    string last_name = args.get_positional<string>("last");
+    cout << "Last name: " << last_name << endl;
+
+    // or get all of them (including program's name)
+    for (string s : args.get_all_positionals<string>())
+        cout << s << endl;
+
+    // or all of them starting from position, e.g. get all the FILES
+    vector<string> files = args.get_all_positionals<string>(3);
+
+    return 0;
 }
-
