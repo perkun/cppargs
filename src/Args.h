@@ -8,7 +8,9 @@ class Args
 {
     friend class Parser;
 
-    public:
+public:
+	string program_name;
+
     bool operator[](string name); // i flag with true status, or has value
 
     template <typename T> T get_value(string name)

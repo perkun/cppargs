@@ -120,6 +120,4 @@ help gets printed and program exits. You can also manually print help with
 
 # TODO:
 
-* make `program_name` private in `parser`. Make `program_name` public in `args`.
-* documentation
 * more beatifull help printing

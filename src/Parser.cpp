@@ -136,6 +136,7 @@ Args Parser::parse_args(int argc, char *argv[])
         occupied_positions.emplace_back(false);
 
     program_name = argv[0];
+    args.program_name = argv[0];
 
     args.flags = parse_flags(argc, argv);
 
