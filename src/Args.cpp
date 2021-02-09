@@ -36,7 +36,6 @@ bool Args::operator[](string name)
 			return true;
 	}
 
-
 	return false;
 }
 

@@ -162,7 +162,9 @@ Args Parser::parse_args(int argc, char *argv[])
             }
     }
 
-    if (num_positionals <= defined_args.positionals.size() + 1)
+
+    if (positional_list.required &&
+        num_positionals <= defined_args.positionals.size() + 1)
     {
         cout << "List " << positional_list.long_name << " is required" << endl;
         exit(1);
@@ -369,7 +371,8 @@ void Parser::compose_help()
     {
         ss << " " << defined_args.positionals[i].long_name;
     }
-    ss << " " << positional_list.long_name << "...";
+	if (positional_list.required)
+		ss << " " << positional_list.long_name << "...";
     ss << endl << endl;
 
     ss << "FLAGS: " << endl;
@@ -443,8 +446,9 @@ void Parser::compose_help()
         ss << opt.long_name << "\t" << opt.description << endl;
     }
     ss << endl;
-    ss << positional_list.long_name << "\t" << positional_list.description
-       << endl;
+	if (positional_list.required)
+		ss << positional_list.long_name << "\t" << positional_list.description
+			<< endl;
 
     ss << endl;
 

@@ -1,6 +1,6 @@
-#include "Parser.h"
 #include <iostream>
 #include <stdio.h>
+#include "Parser.h"
 
 using namespace std;
 
@@ -58,7 +58,6 @@ int main(int argc, char *argv[])
     string name = args.get_positional<string>(1);
 
     // or by name (if defined earlier)
-    // TODO:
     string last_name = args.get_positional<string>("last");
     cout << "Last name: " << last_name << endl;
 
