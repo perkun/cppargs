@@ -128,7 +128,6 @@ void Parser::add_positional_list(string long_name, string description)
 
 Args Parser::parse_args(int argc, char *argv[])
 {
-    compose_help();
     Args args;
 
     occupied_positions.reserve(argc);
@@ -137,6 +136,7 @@ Args Parser::parse_args(int argc, char *argv[])
 
     program_name = argv[0];
     args.program_name = argv[0];
+    compose_help();
 
     args.flags = parse_flags(argc, argv);
 
