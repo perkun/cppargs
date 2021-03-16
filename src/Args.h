@@ -78,9 +78,9 @@ public:
 
     template <typename T> T get_positional(int position)
     {
-        if (position < 0)
+        if (position < 1)
         {
-            cout << "Positional arguments' ids start from 0" << endl;
+            cout << "Positional arguments' ids start from 1" << endl;
             exit(1);
         }
         else if (position >= positionals.size())
@@ -126,6 +126,11 @@ public:
             return_values.push_back(get_positional<T>(i));
         return return_values;
     }
+
+	int num_positionals()
+	{
+		return positionals.size();
+	}
 
 private:
 	bool is_defined(string name);
