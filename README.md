@@ -5,7 +5,7 @@ Simple library for handling command line arguments in C++.
 See `src/main.cpp` for example usage.
 
 
-# Features
+# Usage
 
 First, create a `Parser` object
 
@@ -41,8 +41,8 @@ void add_option(string long_name, string description, bool requred, string defau
 ```
 
 All values are of a type `string`. You can convert them to any value after
-parsing (see below). if the `required` argument is `true`, then if it is not
-given by the user, program will print appropiate message and exit.
+parsing (see below). If the `required` argument is `true`, then if it is not
+given by the user, program will print appropriate message and exit.
 
 ## Options with multiple values
 
@@ -64,7 +64,7 @@ void add_positional(string long_name, string description, int position);
 void add_positional_list(string long_name, string description);
 ```
 
-A `positional_list` is intented to be a collection of positional arguments
+A `positional_list` is intended to be a collection of positional arguments
 separate from single positional arguments. For example, you can specify the name
 of output file as a first positional argument, and then a list of numerous input
 files under one name in the help message.
@@ -81,21 +81,21 @@ After everything is defined, parse the arguments. As a result, you get the
 Args args = parser.parse_args(argc, argv);
 ```
 
-Then you can ask, whether a option was specified by the user
+Then you can ask, whether an option was specified by the user
 
 ```cpp
 if (args["flag_1"])
 	cout << "flag_1 defined" << endl;
 ```
 
-Both short and long names work.
-This is the intended way of checking the values of flags. Check for the
-existance of an option before asking for its value.
+Both short and long names work.  This is the intended way of checking the values
+of flags. You can also check for the existence of an option before asking for
+its value.
 
 ## Getting options' values
 
 To get the values of options, vector options or positional arguments, use these
-templated methods of a `Args` class object:
+template methods of the `Args` class object:
 
 ```cpp
 args.get_value<int>("option_A");
@@ -104,10 +104,10 @@ args.get_value<double>("option_B");
 /// e.g. xyz coordinates:  --position 1.23 -1.412 5.11
 vector<double> position = args.get_vec_values<double>("position");
 
-// single value of a third positional argument
- string filename = get_positional<string>(3);
+// value of the third positional argument
+string filename = get_positional<string>(3);
 
-// retrive a vector of all positional arguments
+// retrieve a vector of all positional arguments
 for (string s: args.get_all_positionals<string>())
 		cout << s << endl;
 ```
@@ -125,4 +125,4 @@ copy headers to `/usr/local/include/` run `make shared_library`.
 
 # TODO:
 
-* more beatifull help printing
+* even more beautiful help printing
