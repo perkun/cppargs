@@ -15,6 +15,7 @@ OBJECTS = $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(CPPEXT)=.o))
 SHARED_OBJECTS = $(patsubst $(SRCDIR)/%,./%,$(SOURCES:.$(CPPEXT)=.o))
 
 $(TARGET): $(OBJECTS)
+		@mkdir -p bin
 		@echo " Linking..."
 		@echo ">>>>>>>>>>>>>>>> $(CC) $^ -o $(TARGET) $(LIB)"; $(CC) $^ -o $(TARGET) $(LIB)
 
