@@ -1,28 +1,28 @@
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <vector>
 #include "Argument.h"
-
-using namespace std;
 
 class Args
 {
     friend class Parser;
 
 public:
-	string program_name;
+	std::string program_name;
 
-    bool operator[](string name); // i flag with true status, or has value
+    bool operator[](std::string name); // i flag with true status, or has value
 
-    template <typename T> T get_value(string name)
+    template <typename T> T get_value(std::string name)
     {
         if (!this->operator[](name))
         {
-            cout << "Error getting value. Option " << name << " was not given!"
-                 << endl;
+            std::cout << "Error getting value. Option " << name << " was not given!"
+                 << std::endl;
             exit(1);
         }
 
-        string value;
+        std::string value;
 
         for (Option &opt : options)
         {
@@ -36,23 +36,23 @@ public:
 
         T return_value;
 
-        stringstream ss;
+        std::stringstream ss;
         ss << value;
         ss >> return_value;
         return return_value;
     }
 
 
-    template <typename T> vector<T> get_vec_values(string name)
+    template <typename T> std::vector<T> get_vec_values(std::string name)
     {
         if (!this->operator[](name))
         {
-            cout << "Error getting value. Option " << name << " was not given!"
-                 << endl;
+            std::cout << "Error getting value. Option " << name << " was not given!"
+                 << std::endl;
             exit(1);
         }
 
-        vector<string> *values;
+        std::vector<std::string> *values;
 
         for (VectorOption &opt : vec_options)
         {
@@ -63,10 +63,10 @@ public:
                     values = &opt.value_vec;
         }
 
-        vector<T> return_values;
+        std::vector<T> return_values;
         for (int i = 0; i < values->size(); i++)
         {
-            stringstream ss;
+            std::stringstream ss;
             T tmp;
             ss << values->at(i);
             ss >> tmp;
@@ -80,28 +80,28 @@ public:
     {
         if (position < 1)
         {
-            cout << "Positional arguments' ids start from 1" << endl;
+            std::cout << "Positional arguments' ids start from 1" << std::endl;
             exit(1);
         }
         else if (position >= positionals.size())
         {
-            cout << "positional id to big!" << endl;
+            std::cout << "positional id to big!" << std::endl;
             exit(1);
         }
 
-        stringstream ss;
+        std::stringstream ss;
         T return_value;
         ss << positionals[position].value;
         ss >> return_value;
         return return_value;
     }
 
-    template <typename T> T get_positional(string name)
+    template <typename T> T get_positional(std::string name)
     {
         if (!this->operator[](name))
         {
-            cout << "Error getting positional. " << name << " was not given!"
-                 << endl;
+            std::cout << "Error getting positional. " << name << " was not given!"
+                 << std::endl;
             exit(1);
         }
 
@@ -109,7 +109,7 @@ public:
 		{
 			if (p.long_name == name)
 			{
-				stringstream ss;
+				std::stringstream ss;
 				T return_value;
 				ss << p.value;
 				ss >> return_value;
@@ -119,9 +119,9 @@ public:
 		return "";
     }
 
-    template <typename T> vector<T> get_all_positionals(int start_pos = 0)
+    template <typename T> std::vector<T> get_all_positionals(int start_pos = 0)
     {
-        vector<T> return_values;
+        std::vector<T> return_values;
         for (int i = start_pos; i < positionals.size(); i++)
             return_values.push_back(get_positional<T>(i));
         return return_values;
@@ -133,9 +133,9 @@ public:
 	}
 
 private:
-	bool is_defined(string name);
-    vector<Flag> flags;
-    vector<Option> options;
-    vector<VectorOption> vec_options;
-    vector<Positional> positionals;
+	bool is_defined(std::string name);
+    std::vector<Flag> flags;
+    std::vector<Option> options;
+    std::vector<VectorOption> vec_options;
+    std::vector<Positional> positionals;
 };

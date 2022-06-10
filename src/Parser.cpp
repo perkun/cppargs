@@ -1,5 +1,6 @@
 #include "Parser.h"
 
+using std::regex;
 
 Parser::Parser()
 {
@@ -11,77 +12,77 @@ Parser::~Parser()
 {
 }
 
-void Parser::validate(char short_name, string long_name)
+void Parser::validate(char short_name, std::string long_name)
 {
-    if (defined_args.is_defined(string(1, short_name)))
+    if (defined_args.is_defined(std::string(1, short_name)))
     {
-        cout << "Option or flag with short name '" << short_name
-             << "' already specified" << endl;
+        std::cout << "Option or flag with short name '" << short_name
+             << "' already specified" << std::endl;
         exit(1);
     }
 
     if (defined_args.is_defined(long_name))
     {
-        cout << "Option or flag with name '" << long_name
-             << "' is already specified" << endl;
+        std::cout << "Option or flag with name '" << long_name
+             << "' is already specified" << std::endl;
         exit(1);
     }
 
     // check for spaces in long_name
     if (long_name.find(' ') != long_name.npos)
     {
-        cout << "Argument names cannot contain spaces (" << long_name << ")"
-             << endl;
+        std::cout << "Argument names cannot contain spaces (" << long_name << ")"
+             << std::endl;
         exit(1);
     }
 }
 
 
-void Parser::validate(string long_name)
+void Parser::validate(std::string long_name)
 {
     if (defined_args.is_defined(long_name))
     {
-        cout << "Option or flag with name '" << long_name
-             << "' is already specified" << endl;
+        std::cout << "Option or flag with name '" << long_name
+             << "' is already specified" << std::endl;
         exit(1);
     }
 
     // check for spaces in long_name
     if (long_name.find(' ') != long_name.npos)
     {
-        cout << "Argument names cannot contain spaces (" << long_name << ")"
-             << endl;
+        std::cout << "Argument names cannot contain spaces (" << long_name << ")"
+             << std::endl;
         exit(1);
     }
 }
 
 
-void Parser::add_flag(char short_name, string long_name, string description)
+void Parser::add_flag(char short_name, std::string long_name, std::string description)
 {
     validate(short_name, long_name);
     defined_args.flags.emplace_back(
-        Flag(string(1, short_name), long_name, description));
+        Flag(std::string(1, short_name), long_name, description));
 }
 
 
-void Parser::add_flag(string long_name, string description)
+void Parser::add_flag(std::string long_name, std::string description)
 {
     validate(long_name);
     defined_args.flags.emplace_back(Flag("", long_name, description));
 }
 
 
-void Parser::add_option(char short_name, string long_name, string description,
-                        bool required, string default_value)
+void Parser::add_option(char short_name, std::string long_name, std::string description,
+                        bool required, std::string default_value)
 {
     validate(short_name, long_name);
-    defined_args.options.emplace_back(string(1, short_name), long_name,
+    defined_args.options.emplace_back(std::string(1, short_name), long_name,
                                       description, required, default_value);
 }
 
 
-void Parser::add_option(string long_name, string description, bool required,
-                        string default_value)
+void Parser::add_option(std::string long_name, std::string description, bool required,
+                        std::string default_value)
 {
     validate(long_name);
     defined_args.options.emplace_back("", long_name, description, required,
@@ -89,16 +90,16 @@ void Parser::add_option(string long_name, string description, bool required,
 }
 
 
-void Parser::add_vec_option(char short_name, string long_name,
-                            string description, int num_values, bool requred)
+void Parser::add_vec_option(char short_name, std::string long_name,
+                            std::string description, int num_values, bool requred)
 {
     validate(short_name, long_name);
     defined_args.vec_options.emplace_back(VectorOption(
-        string(1, short_name), long_name, description, num_values, requred));
+        std::string(1, short_name), long_name, description, num_values, requred));
 }
 
 
-void Parser::add_vec_option(string long_name, string description,
+void Parser::add_vec_option(std::string long_name, std::string description,
                             int num_values, bool requred)
 {
     validate(long_name);
@@ -107,7 +108,7 @@ void Parser::add_vec_option(string long_name, string description,
 }
 
 
-void Parser::add_positional(string long_name, string description, int position)
+void Parser::add_positional(std::string long_name, std::string description, int position)
 {
     validate(long_name);
     Positional pos("", position);
@@ -118,7 +119,7 @@ void Parser::add_positional(string long_name, string description, int position)
 }
 
 
-void Parser::add_positional_list(string long_name, string description)
+void Parser::add_positional_list(std::string long_name, std::string description)
 {
     positional_list.long_name = long_name;
     positional_list.description = description;
@@ -156,8 +157,8 @@ Args Parser::parse_args(int argc, char *argv[])
         if (pos.required)
             if (pos.position >= args.positionals.size())
             {
-                cout << "Positional argument " << pos.long_name
-                     << " is required!" << endl;
+                std::cout << "Positional argument " << pos.long_name
+                     << " is required!" << std::endl;
                 exit(1);
             }
     }
@@ -166,7 +167,7 @@ Args Parser::parse_args(int argc, char *argv[])
     if (positional_list.required &&
         num_positionals <= defined_args.positionals.size() + 1)
     {
-        cout << "List " << positional_list.long_name << " is required" << endl;
+        std::cout << "List " << positional_list.long_name << " is required" << std::endl;
         exit(1);
     }
 
@@ -175,9 +176,9 @@ Args Parser::parse_args(int argc, char *argv[])
 }
 
 
-vector<Flag> Parser::parse_flags(int argc, char *argv[])
+std::vector<Flag> Parser::parse_flags(int argc, char *argv[])
 {
-    vector<Flag> flags;
+    std::vector<Flag> flags;
 
     for (Flag defined_flag : defined_args.flags)
     {
@@ -207,9 +208,9 @@ vector<Flag> Parser::parse_flags(int argc, char *argv[])
 }
 
 
-vector<Option> Parser::parse_options(int argc, char *argv[])
+std::vector<Option> Parser::parse_options(int argc, char *argv[])
 {
-    vector<Option> options;
+    std::vector<Option> options;
 
     for (Option defined_option : defined_args.options)
     {
@@ -230,8 +231,8 @@ vector<Option> Parser::parse_options(int argc, char *argv[])
                 if (i == argc - 1 ||
                     regex_match(argv[i + 1], regex("--?[a-zA-Z]*")))
                 {
-                    cout << "Option " << option.long_name << " requires a value"
-                         << endl;
+                    std::cout << "Option " << option.long_name << " requires a value"
+                         << std::endl;
                     exit(1);
                 }
 
@@ -244,7 +245,7 @@ vector<Option> Parser::parse_options(int argc, char *argv[])
 
         if (option.required && !found)
         {
-            cout << "Option " << option.long_name << " is required" << endl;
+            std::cout << "Option " << option.long_name << " is required" << std::endl;
             exit(1);
         }
 
@@ -255,9 +256,9 @@ vector<Option> Parser::parse_options(int argc, char *argv[])
 }
 
 
-vector<VectorOption> Parser::parse_vec_options(int argc, char *argv[])
+std::vector<VectorOption> Parser::parse_vec_options(int argc, char *argv[])
 {
-    vector<VectorOption> vec_options;
+    std::vector<VectorOption> vec_options;
 
     for (VectorOption defined_vec_option : defined_args.vec_options)
     {
@@ -266,8 +267,8 @@ vector<VectorOption> Parser::parse_vec_options(int argc, char *argv[])
 
         if (vec_opt.num_values < 2)
         {
-            cout << "Wrong number of values for option " << vec_opt.long_name
-                 << ". Should be 2 or more." << endl;
+            std::cout << "Wrong number of values for option " << vec_opt.long_name
+                 << ". Should be 2 or more." << std::endl;
             exit(1);
         }
 
@@ -287,8 +288,8 @@ vector<VectorOption> Parser::parse_vec_options(int argc, char *argv[])
                     regex_match(argv[i + 2], regex("--?[a-zA-Z]*")) ||
                     regex_match(argv[i + 3], regex("--?[a-zA-Z]*")))
                 {
-                    cout << "Option " << vec_opt.long_name << " requires "
-                         << vec_opt.num_values << " values" << endl;
+                    std::cout << "Option " << vec_opt.long_name << " requires "
+                         << vec_opt.num_values << " values" << std::endl;
                     exit(1);
                 }
 
@@ -305,7 +306,7 @@ vector<VectorOption> Parser::parse_vec_options(int argc, char *argv[])
 
         if (vec_opt.required && !found)
         {
-            cout << "Option " << vec_opt.long_name << " is required" << endl;
+            std::cout << "Option " << vec_opt.long_name << " is required" << std::endl;
             exit(1);
         }
 
@@ -316,9 +317,9 @@ vector<VectorOption> Parser::parse_vec_options(int argc, char *argv[])
 }
 
 
-vector<Positional> Parser::parse_positional(int argc, char *argv[])
+std::vector<Positional> Parser::parse_positional(int argc, char *argv[])
 {
-    vector<Positional> positionals;
+    std::vector<Positional> positionals;
 
     for (int i = 0; i < occupied_positions.size(); i++)
     {
@@ -338,7 +339,7 @@ vector<Positional> Parser::parse_positional(int argc, char *argv[])
     return positionals;
 }
 
-void Parser::add_description(string dsc)
+void Parser::add_description(std::string dsc)
 {
     program_description = dsc;
 }
@@ -346,10 +347,10 @@ void Parser::add_description(string dsc)
 
 void Parser::compose_help()
 {
-    stringstream ss;
-    ss << endl << program_description << endl << endl;
+    std::stringstream ss;
+    ss << std::endl << program_description << std::endl << std::endl;
 
-    ss << "Usage:" << endl;
+    ss << "Usage:" << std::endl;
     ss << "\t" << program_name << " [FLAGS] [OPTIONS]";
 
     for (Option &opt : defined_args.options)
@@ -373,19 +374,19 @@ void Parser::compose_help()
     }
 	if (positional_list.required)
 		ss << " " << positional_list.long_name << "...";
-    ss << endl << endl;
+    ss << std::endl << std::endl;
 
-    ss << "FLAGS: " << endl;
+    ss << "FLAGS: " << std::endl;
     for (Flag &f : defined_args.flags)
     {
         if (f.short_name == "")
             ss << "    ";
         else
             ss << "-" << f.short_name << ", ";
-        ss << "--" << f.long_name << "\t" << f.description << endl;
+        ss << "--" << f.long_name << "\t" << f.description << std::endl;
     }
 
-    ss << endl << "OPTIONS (required):" << endl;
+    ss << std::endl << "OPTIONS (required):" << std::endl;
     for (Option &opt : defined_args.options)
     {
         if (!opt.required)
@@ -396,7 +397,7 @@ void Parser::compose_help()
         else
             ss << "-" << opt.short_name << ", ";
         ss << "--" << opt.long_name << " VALUE"
-           << "\t" << opt.description << endl;
+           << "\t" << opt.description << std::endl;
     }
 
     for (VectorOption &opt : defined_args.vec_options)
@@ -409,11 +410,11 @@ void Parser::compose_help()
         else
             ss << "-" << opt.short_name << ", ";
         ss << "--" << opt.long_name << " " << opt.num_values << " VALUES"
-           << "\t" << opt.description << endl;
+           << "\t" << opt.description << std::endl;
     }
 
 
-    ss << endl << "OPTIONS:" << endl;
+    ss << std::endl << "OPTIONS:" << std::endl;
     for (Option &opt : defined_args.options)
     {
         if (opt.required)
@@ -424,7 +425,7 @@ void Parser::compose_help()
         else
             ss << "-" << opt.short_name << ", ";
         ss << "--" << opt.long_name << " VALUE"
-           << "\t" << opt.description << endl;
+           << "\t" << opt.description << std::endl;
     }
 
     for (VectorOption &opt : defined_args.vec_options)
@@ -437,25 +438,25 @@ void Parser::compose_help()
         else
             ss << "-" << opt.short_name << ", ";
         ss << "--" << opt.long_name << " " << opt.num_values << " VALUES"
-           << "\t" << opt.description << endl;
+           << "\t" << opt.description << std::endl;
     }
 
-    ss << endl << "POSITIONAL ARGUMENTS:" << endl;
+    ss << std::endl << "POSITIONAL ARGUMENTS:" << std::endl;
     for (Positional &opt : defined_args.positionals)
     {
-        ss << opt.long_name << "\t" << opt.description << endl;
+        ss << opt.long_name << "\t" << opt.description << std::endl;
     }
-    ss << endl;
+    ss << std::endl;
 	if (positional_list.required)
 		ss << positional_list.long_name << "\t" << positional_list.description
-			<< endl;
+			<< std::endl;
 
-    ss << endl;
+    ss << std::endl;
 
     help_message = ss.str();
 }
 
 void Parser::print_help()
 {
-    cout << help_message;
+    std::cout << help_message;
 }

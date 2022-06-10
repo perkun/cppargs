@@ -1,7 +1,6 @@
 #include "Args.h"
 
-
-bool Args::operator[](string name)
+bool Args::operator[](std::string name)
 {
 	for (Flag &f: flags)
 	{
@@ -42,7 +41,7 @@ bool Args::operator[](string name)
 
 
 
-bool Args::is_defined(string name)
+bool Args::is_defined(std::string name)
 {
 	for (Flag &f: flags)
 	{
