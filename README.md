@@ -126,3 +126,5 @@ copy headers to `/usr/local/include/` run `make shared_library`.
 # TODO:
 
 * even more beautiful help printing
+* migrate to premake5
+* testing
