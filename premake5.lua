@@ -13,7 +13,8 @@ outputdir = "%{cfg.buildcfg}"
 project "cppargs"
 	location "./"
 	--possible values: ConsoleApp, SharedLib, StaticLib, Makefile, Utility, Packaging
-	kind "ConsoleApp"
+-- 	kind "ConsoleApp"
+	kind "StaticLib"
 
 	language "C++"
 	cppdialect "C++17"
@@ -34,6 +35,46 @@ project "cppargs"
 	}
 
 	links {}
+
+	filter "configurations:Debug"
+		symbols "On"
+		defines "DEBUG"
+
+	filter "configurations:Release"
+		-- defines...
+		optimize "On"
+		defines "RELEASE"
+
+	filter "configurations:Dist"
+		-- defines...
+		optimize "On"
+
+
+project "test-cppargs"
+	location "./"
+	--possible values: ConsoleApp, SharedLib, StaticLib, Makefile, Utility, Packaging
+	kind "ConsoleApp"
+
+	language "C++"
+	cppdialect "C++17"
+	--buildoptions { "-pthread" }
+
+	targetdir ("bin/" .. outputdir)
+	objdir ("build/" .. outputdir)
+
+
+	files
+	{
+		"test/**.h",
+		"test/**.cpp"
+	}
+
+	includedirs
+	{
+        "%{wks.location}/src"
+	}
+
+	links {"gtest", "cppargs"}
 
 	filter "configurations:Debug"
 		symbols "On"

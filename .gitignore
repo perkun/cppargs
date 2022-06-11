@@ -3,4 +3,5 @@ bin/**
 .cache/**
 Makefile
 cppargs.make
+test-cppargs.make
 compile_commands.json
