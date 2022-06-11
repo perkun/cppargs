@@ -1,4 +1,6 @@
 build/**
 bin/**
 .cache/**
+Makefile
+cppargs.make
 compile_commands.json
