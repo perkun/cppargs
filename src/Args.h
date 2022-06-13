@@ -5,6 +5,7 @@
 
 #include "Argument.h"
 #include "utils.h"
+#include "ErrorMessages.h"
 
 class Args
 {
@@ -19,8 +20,7 @@ public:
     T get_value(std::string name)
     {
         if (!this->operator[](name)) {
-            std::cout << "Error getting value. Option " << name
-                      << " was not given!" << std::endl;
+            ErrorMessages::option_not_given(name);
             exit(1);
         }
 
@@ -39,8 +39,7 @@ public:
     std::vector<T> get_vec_values(std::string name)
     {
         if (!this->operator[](name)) {
-            std::cout << "Error getting value. Option " << name
-                      << " was not given!" << std::endl;
+            ErrorMessages::option_not_given(name);
             exit(1);
         }
 
@@ -63,10 +62,10 @@ public:
     T get_positional(int position)
     {
         if (position < 1) {
-            std::cout << "Positional arguments' ids start from 1" << std::endl;
+            ErrorMessages::positionals_start_index();
             exit(1);
         } else if (position >= positionals.size()) {
-            std::cout << "positional id to big!" << std::endl;
+            ErrorMessages::postional_index_too_big();
             exit(1);
         }
 
@@ -77,8 +76,7 @@ public:
     T get_positional(std::string name)
     {
         if (!this->operator[](name)) {
-            std::cout << "Error getting positional. " << name
-                      << " was not given!" << std::endl;
+            ErrorMessages::positional_not_given(name);
             exit(1);
         }
 

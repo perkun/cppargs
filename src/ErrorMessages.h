@@ -55,8 +55,30 @@ inline void specified_invalid_num_of_values(std::string long_name)
 
 inline void invalid_num_of_values(std::string long_name, int num_values)
 {
-    std::cout << "Option " << long_name << " requires "
-              << num_values << " values" << std::endl;
+    std::cout << "Option " << long_name << " requires " << num_values
+              << " values" << std::endl;
+}
+
+inline void option_not_given(std::string name)
+{
+    std::cout << "Error getting value. Option " << name << " was not given!"
+              << std::endl;
+}
+
+inline void positional_not_given(std::string name)
+{
+    std::cout << "Error getting positional. " << name << " was not given!"
+              << std::endl;
+}
+
+inline void positionals_start_index()
+{
+    std::cout << "Positional arguments' ids start from 1" << std::endl;
+}
+
+inline void postional_index_too_big()
+{
+    std::cout << "positional id to big!" << std::endl;
 }
 
 }  // namespace ErrorMessages
