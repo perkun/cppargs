@@ -5,6 +5,7 @@
 #include <cstring>
 #include <regex>
 #include "Args.h"
+#include "ErrorMessages.h"
 
 class Parser
 {

@@ -16,25 +16,11 @@ void Parser::validate(char short_name, std::string long_name)
 {
     if (defined_args.is_defined(std::string(1, short_name)))
     {
-        std::cout << "Option or flag with short name '" << short_name
-             << "' already specified" << std::endl;
+        ErrorMessages::short_name_taken(short_name);
         exit(1);
     }
 
-    if (defined_args.is_defined(long_name))
-    {
-        std::cout << "Option or flag with name '" << long_name
-             << "' is already specified" << std::endl;
-        exit(1);
-    }
-
-    // check for spaces in long_name
-    if (long_name.find(' ') != long_name.npos)
-    {
-        std::cout << "Argument names cannot contain spaces (" << long_name << ")"
-             << std::endl;
-        exit(1);
-    }
+    validate(long_name);
 }
 
 
@@ -42,16 +28,13 @@ void Parser::validate(std::string long_name)
 {
     if (defined_args.is_defined(long_name))
     {
-        std::cout << "Option or flag with name '" << long_name
-             << "' is already specified" << std::endl;
+        ErrorMessages::long_name_taken(long_name);
         exit(1);
     }
 
-    // check for spaces in long_name
     if (long_name.find(' ') != long_name.npos)
     {
-        std::cout << "Argument names cannot contain spaces (" << long_name << ")"
-             << std::endl;
+        ErrorMessages::name_with_spaces(long_name);
         exit(1);
     }
 }
@@ -157,8 +140,7 @@ Args Parser::parse_args(int argc, char *argv[])
         if (pos.required)
             if (pos.position >= args.positionals.size())
             {
-                std::cout << "Positional argument " << pos.long_name
-                     << " is required!" << std::endl;
+                ErrorMessages::positional_required(pos.long_name);
                 exit(1);
             }
     }
@@ -167,7 +149,7 @@ Args Parser::parse_args(int argc, char *argv[])
     if (positional_list.required &&
         num_positionals <= defined_args.positionals.size() + 1)
     {
-        std::cout << "List " << positional_list.long_name << " is required" << std::endl;
+        ErrorMessages::list_required(positional_list.long_name);
         exit(1);
     }
 
@@ -231,8 +213,7 @@ std::vector<Option> Parser::parse_options(int argc, char *argv[])
                 if (i == argc - 1 ||
                     regex_match(argv[i + 1], regex("--?[a-zA-Z]*")))
                 {
-                    std::cout << "Option " << option.long_name << " requires a value"
-                         << std::endl;
+                    ErrorMessages::option_requires_value(option.long_name);
                     exit(1);
                 }
 
@@ -245,7 +226,7 @@ std::vector<Option> Parser::parse_options(int argc, char *argv[])
 
         if (option.required && !found)
         {
-            std::cout << "Option " << option.long_name << " is required" << std::endl;
+            ErrorMessages::option_required(option.long_name);
             exit(1);
         }
 
@@ -267,8 +248,7 @@ std::vector<VectorOption> Parser::parse_vec_options(int argc, char *argv[])
 
         if (vec_opt.num_values < 2)
         {
-            std::cout << "Wrong number of values for option " << vec_opt.long_name
-                 << ". Should be 2 or more." << std::endl;
+            ErrorMessages::specified_invalid_num_of_values(vec_opt.long_name);
             exit(1);
         }
 
@@ -288,8 +268,8 @@ std::vector<VectorOption> Parser::parse_vec_options(int argc, char *argv[])
                     regex_match(argv[i + 2], regex("--?[a-zA-Z]*")) ||
                     regex_match(argv[i + 3], regex("--?[a-zA-Z]*")))
                 {
-                    std::cout << "Option " << vec_opt.long_name << " requires "
-                         << vec_opt.num_values << " values" << std::endl;
+                    ErrorMessages::invalid_num_of_values(vec_opt.long_name,
+                                                         vec_opt.num_values);
                     exit(1);
                 }
 
@@ -306,7 +286,7 @@ std::vector<VectorOption> Parser::parse_vec_options(int argc, char *argv[])
 
         if (vec_opt.required && !found)
         {
-            std::cout << "Option " << vec_opt.long_name << " is required" << std::endl;
+            ErrorMessages::option_required(vec_opt.long_name);
             exit(1);
         }
 
