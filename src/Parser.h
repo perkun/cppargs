@@ -33,6 +33,7 @@ public:
 	void add_description(std::string dsc);
 
 	Args parse_args(int argc, char *argv[]);
+	Args parse_args(std::vector<std::string> cmd_line);
 
 	void print_help();
 
@@ -50,10 +51,10 @@ private:
 	void validate(char short_name, std::string long_name);
 	void validate(std::string long_name);
 
-    std::vector<Flag> parse_flags(int argc, char *argv[]);
-	std::vector<Option> parse_options(int argc, char *argv[]);
-	std::vector<VectorOption> parse_vec_options(int argc, char *argv[]);
-	std::vector<Positional> parse_positional(int argc, char *argv[]);
+    std::vector<Flag> parse_flags(std::vector<std::string> cmd_line);
+	std::vector<Option> parse_options(std::vector<std::string> cmd_line);
+    std::vector<Positional> parse_positional(std::vector<std::string> cmd_line);
+	std::vector<VectorOption> parse_vec_options(std::vector<std::string> cmd_line);
 
 	void compose_help();
 };
