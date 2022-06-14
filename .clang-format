@@ -1,0 +1,14 @@
+---
+Language:        Cpp
+BasedOnStyle:  Google
+IndentWidth:     4
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterEnum: true
+  AfterStruct: true
+  AfterFunction: true
+  AfterClass: true
+  SplitEmptyFunction: false
+
+AccessModifierOffset: -4

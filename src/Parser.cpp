@@ -2,7 +2,7 @@
 
 using std::regex;
 
-Parser::Parser()
+Parser::Parser() : is_parsing_successful(true)
 {
     defined_args.flags.push_back(Flag("h", "help", "print this help message"));
 }
@@ -12,45 +12,58 @@ Parser::~Parser()
 {
 }
 
-void Parser::validate(char short_name, std::string long_name)
+bool Parser::is_valid(char short_name, std::string long_name)
 {
     if (defined_args.is_defined(std::string(1, short_name)))
     {
         ErrorMessages::short_name_taken(short_name);
-        exit(1);
+        parsing_failed();
+        return false;
     }
 
-    validate(long_name);
+    return is_valid(long_name);
 }
 
 
-void Parser::validate(std::string long_name)
+bool Parser::is_valid(std::string long_name)
 {
     if (defined_args.is_defined(long_name))
     {
         ErrorMessages::long_name_taken(long_name);
-        exit(1);
+        parsing_failed();
+        return false;
     }
 
     if (long_name.find(' ') != long_name.npos)
     {
         ErrorMessages::name_with_spaces(long_name);
-        exit(1);
+        parsing_failed();
+        return false;
     }
+
+    return true;
 }
 
 
 void Parser::add_flag(char short_name, std::string long_name, std::string description)
 {
-    validate(short_name, long_name);
+    if (!is_valid(short_name, long_name))
+    {
+        return;
+    }
+
     defined_args.flags.emplace_back(
-        Flag(std::string(1, short_name), long_name, description));
+            Flag(std::string(1, short_name), long_name, description));
 }
 
 
 void Parser::add_flag(std::string long_name, std::string description)
 {
-    validate(long_name);
+    if (!is_valid(long_name))
+    {
+        return;
+    }
+
     defined_args.flags.emplace_back(Flag("", long_name, description));
 }
 
@@ -58,7 +71,11 @@ void Parser::add_flag(std::string long_name, std::string description)
 void Parser::add_option(char short_name, std::string long_name, std::string description,
                         bool required, std::string default_value)
 {
-    validate(short_name, long_name);
+    if (!is_valid(short_name, long_name))
+    {
+        return;
+    }
+
     defined_args.options.emplace_back(std::string(1, short_name), long_name,
                                       description, required, default_value);
 }
@@ -67,7 +84,11 @@ void Parser::add_option(char short_name, std::string long_name, std::string desc
 void Parser::add_option(std::string long_name, std::string description, bool required,
                         std::string default_value)
 {
-    validate(long_name);
+    if (!is_valid(long_name))
+    {
+        return;
+    }
+
     defined_args.options.emplace_back("", long_name, description, required,
                                       default_value);
 }
@@ -76,7 +97,11 @@ void Parser::add_option(std::string long_name, std::string description, bool req
 void Parser::add_vec_option(char short_name, std::string long_name,
                             std::string description, int num_values, bool requred)
 {
-    validate(short_name, long_name);
+    if (!is_valid(short_name, long_name))
+    {
+        return;
+    }
+
     defined_args.vec_options.emplace_back(VectorOption(
         std::string(1, short_name), long_name, description, num_values, requred));
 }
@@ -85,7 +110,11 @@ void Parser::add_vec_option(char short_name, std::string long_name,
 void Parser::add_vec_option(std::string long_name, std::string description,
                             int num_values, bool requred)
 {
-    validate(long_name);
+    if (!is_valid(long_name))
+    {
+        return;
+    }
+
     defined_args.vec_options.emplace_back(
         VectorOption("", long_name, description, num_values, requred));
 }
@@ -93,7 +122,11 @@ void Parser::add_vec_option(std::string long_name, std::string description,
 
 void Parser::add_positional(std::string long_name, std::string description, int position)
 {
-    validate(long_name);
+    if (!is_valid(long_name))
+    {
+        return;
+    }
+
     Positional pos("", position);
     pos.long_name = long_name;
     pos.description = description;
@@ -121,6 +154,11 @@ Args Parser::parse_args(int argc, char *argv[])
 
 Args Parser::parse_args(std::vector<std::string> cmd_line)
 {
+    if (!is_ok())
+    {
+        return Args();
+    }
+
     Args args;
 
     occupied_positions.reserve(cmd_line.size());
@@ -136,7 +174,8 @@ Args Parser::parse_args(std::vector<std::string> cmd_line)
     if (args["help"])
     {
         print_help();
-        exit(1);
+        parsing_failed();
+        return Args();
     }
 
     args.options = parse_options(cmd_line);
@@ -150,7 +189,8 @@ Args Parser::parse_args(std::vector<std::string> cmd_line)
             if (pos.position >= args.positionals.size())
             {
                 ErrorMessages::positional_required(pos.long_name);
-                exit(1);
+                parsing_failed();
+                return Args();
             }
     }
 
@@ -159,9 +199,9 @@ Args Parser::parse_args(std::vector<std::string> cmd_line)
         num_positionals <= defined_args.positionals.size() + 1)
     {
         ErrorMessages::list_required(positional_list.long_name);
-        exit(1);
+        parsing_failed();
+        return Args();
     }
-
 
     return args;
 }
@@ -225,7 +265,8 @@ std::vector<Option> Parser::parse_options(std::vector<std::string> cmd_line)
                     regex_match(cmd_line[i + 1], regex("--?[a-zA-Z]*")))
                 {
                     ErrorMessages::option_requires_value(option.long_name);
-                    exit(1);
+                    parsing_failed();
+                    return std::vector<Option>();
                 }
 
                 option.value = cmd_line[i + 1];
@@ -238,7 +279,9 @@ std::vector<Option> Parser::parse_options(std::vector<std::string> cmd_line)
         if (option.required && !found)
         {
             ErrorMessages::option_required(option.long_name);
-            exit(1);
+            parsing_failed();
+            return std::vector<Option>();
+
         }
 
         options.push_back(option);
@@ -261,7 +304,8 @@ std::vector<VectorOption> Parser::parse_vec_options(std::vector<std::string> cmd
         if (vec_opt.num_values < 2)
         {
             ErrorMessages::specified_invalid_num_of_values(vec_opt.long_name);
-            exit(1);
+            parsing_failed();
+            return std::vector<VectorOption>();
         }
 
         regex long_regex = regex("--" + vec_opt.long_name);
@@ -282,7 +326,8 @@ std::vector<VectorOption> Parser::parse_vec_options(std::vector<std::string> cmd
                 {
                     ErrorMessages::invalid_num_of_values(vec_opt.long_name,
                                                          vec_opt.num_values);
-                    exit(1);
+                    parsing_failed();
+                    return std::vector<VectorOption>();
                 }
 
                 occupied_positions[i] = true;
@@ -299,7 +344,8 @@ std::vector<VectorOption> Parser::parse_vec_options(std::vector<std::string> cmd
         if (vec_opt.required && !found)
         {
             ErrorMessages::option_required(vec_opt.long_name);
-            exit(1);
+            parsing_failed();
+            return std::vector<VectorOption>();
         }
 
         vec_options.push_back(vec_opt);

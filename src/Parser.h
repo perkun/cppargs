@@ -36,10 +36,14 @@ public:
 	Args parse_args(int argc, char *argv[]);
 	Args parse_args(std::vector<std::string> cmd_line);
 
+    bool is_ok() { return is_parsing_successful; }
+
 	void print_help();
 
 
 private:
+    bool is_parsing_successful;
+    void parsing_failed() {is_parsing_successful = false;}
 	// the ones defined by user
 	Args defined_args;
     std::vector<bool> occupied_positions;
@@ -49,8 +53,8 @@ private:
 
 	PositionalList positional_list;
 
-	void validate(char short_name, std::string long_name);
-	void validate(std::string long_name);
+	bool is_valid(char short_name, std::string long_name);
+	bool is_valid(std::string long_name);
 
     std::vector<Flag> parse_flags(std::vector<std::string> cmd_line);
 	std::vector<Option> parse_options(std::vector<std::string> cmd_line);
