@@ -1,6 +1,7 @@
 #include "Parser.h"
 
 using std::regex;
+using ErrorMessages::print_error;
 
 Parser::Parser() : is_parsing_successful(true)
 {
@@ -16,7 +17,7 @@ bool Parser::is_valid(char short_name, std::string long_name)
 {
     if (defined_args.is_defined(std::string(1, short_name)))
     {
-        ErrorMessages::short_name_taken(short_name);
+        print_error(ErrorMessages::short_name_taken(short_name));
         parsing_failed();
         return false;
     }
@@ -29,14 +30,14 @@ bool Parser::is_valid(std::string long_name)
 {
     if (defined_args.is_defined(long_name))
     {
-        ErrorMessages::long_name_taken(long_name);
+        print_error(ErrorMessages::long_name_taken(long_name));
         parsing_failed();
         return false;
     }
 
     if (long_name.find(' ') != long_name.npos)
     {
-        ErrorMessages::name_with_spaces(long_name);
+        print_error(ErrorMessages::name_with_spaces(long_name));
         parsing_failed();
         return false;
     }
@@ -188,7 +189,7 @@ Args Parser::parse_args(std::vector<std::string> cmd_line)
         if (pos.required)
             if (pos.position >= args.positionals.size())
             {
-                ErrorMessages::positional_required(pos.long_name);
+                print_error(ErrorMessages::positional_required(pos.long_name));
                 parsing_failed();
                 return Args();
             }
@@ -198,7 +199,7 @@ Args Parser::parse_args(std::vector<std::string> cmd_line)
     if (positional_list.required &&
         num_positionals <= defined_args.positionals.size() + 1)
     {
-        ErrorMessages::list_required(positional_list.long_name);
+        print_error(ErrorMessages::list_required(positional_list.long_name));
         parsing_failed();
         return Args();
     }
@@ -264,7 +265,7 @@ std::vector<Option> Parser::parse_options(std::vector<std::string> cmd_line)
                 if (i == argc - 1 ||
                     regex_match(cmd_line[i + 1], regex("--?[a-zA-Z]*")))
                 {
-                    ErrorMessages::option_requires_value(option.long_name);
+                    print_error(ErrorMessages::option_requires_value(option.long_name));
                     parsing_failed();
                     return std::vector<Option>();
                 }
@@ -278,7 +279,7 @@ std::vector<Option> Parser::parse_options(std::vector<std::string> cmd_line)
 
         if (option.required && !found)
         {
-            ErrorMessages::option_required(option.long_name);
+            print_error(ErrorMessages::option_required(option.long_name));
             parsing_failed();
             return std::vector<Option>();
 
@@ -303,7 +304,7 @@ std::vector<VectorOption> Parser::parse_vec_options(std::vector<std::string> cmd
 
         if (vec_opt.num_values < 2)
         {
-            ErrorMessages::specified_invalid_num_of_values(vec_opt.long_name);
+            print_error(ErrorMessages::specified_invalid_num_of_values(vec_opt.long_name));
             parsing_failed();
             return std::vector<VectorOption>();
         }
@@ -324,8 +325,8 @@ std::vector<VectorOption> Parser::parse_vec_options(std::vector<std::string> cmd
                     regex_match(cmd_line[i + 2], regex("--?[a-zA-Z]*")) ||
                     regex_match(cmd_line[i + 3], regex("--?[a-zA-Z]*")))
                 {
-                    ErrorMessages::invalid_num_of_values(vec_opt.long_name,
-                                                         vec_opt.num_values);
+                    print_error(ErrorMessages::invalid_num_of_values(vec_opt.long_name,
+                                vec_opt.num_values));
                     parsing_failed();
                     return std::vector<VectorOption>();
                 }
@@ -343,7 +344,7 @@ std::vector<VectorOption> Parser::parse_vec_options(std::vector<std::string> cmd
 
         if (vec_opt.required && !found)
         {
-            ErrorMessages::option_required(vec_opt.long_name);
+            print_error(ErrorMessages::option_required(vec_opt.long_name));
             parsing_failed();
             return std::vector<VectorOption>();
         }

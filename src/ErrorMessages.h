@@ -5,79 +5,78 @@
 
 namespace ErrorMessages {
 
-inline void short_name_taken(char short_name)
+inline void print_error(std::string msg)
 {
-    std::cout << "Option or flag with short name '" << short_name
-              << "' is already specified" << std::endl;
+    std::cerr << msg;
 }
 
-inline void long_name_taken(std::string long_name)
+inline std::string short_name_taken(char short_name)
 {
-    std::cout << "Option or flag with name '" << long_name
-              << "' is already specified" << std::endl;
+    return "Option or flag with short name '" + std::string(1, short_name) +
+           "' is already specified\n";
 }
 
-inline void name_with_spaces(std::string long_name)
+inline std::string long_name_taken(std::string long_name)
 {
-    std::cout << "Names cannot contain spaces (" << long_name << ")"
-              << std::endl;
+    return "Option or flag with name '" + long_name +
+           "' is already specified\n";
 }
 
-inline void positional_required(std::string long_name)
+inline std::string name_with_spaces(std::string long_name)
 {
-    std::cout << "Positional argument " << long_name << " is required!"
-              << std::endl;
+    return "Names cannot contain spaces (" + long_name + ")\n";
 }
 
-inline void list_required(std::string long_name)
+inline std::string positional_required(std::string long_name)
 {
-    std::cout << "List " << long_name << " is required" << std::endl;
+    return "Positional argument " + long_name + " is required!\n";
 }
 
-inline void option_required(std::string long_name)
+inline std::string list_required(std::string long_name)
 {
-    std::cout << "Option " << long_name << " is required" << std::endl;
+    return "List " + long_name + " is required\n";
 }
 
-inline void option_requires_value(std::string long_name)
+inline std::string option_required(std::string long_name)
 {
-    std::cout << "Option " << long_name << " requires a value" << std::endl;
+    return "Option " + long_name + " is required\n";
 }
 
-inline void specified_invalid_num_of_values(std::string long_name)
+inline std::string option_requires_value(std::string long_name)
 {
-    std::cout
-        << "Invalid number of values for option " << long_name
-        << ". Specify more than 1 values for vector option, or use option."
-        << std::endl;
+    return "Option " + long_name + " requires a value\n";
 }
 
-inline void invalid_num_of_values(std::string long_name, int num_values)
+inline std::string specified_invalid_num_of_values(std::string long_name)
 {
-    std::cout << "Option " << long_name << " requires " << num_values
-              << " values" << std::endl;
+    return "Invalid number of values for option " + long_name +
+           ". Specify more than 1 values for vector option, or use option.\n";
 }
 
-inline void option_not_given(std::string name)
+inline std::string invalid_num_of_values(std::string long_name, int num_values)
 {
-    std::cout << "Error getting value. Option " << name << " was not given!"
-              << std::endl;
+    return "Option " + long_name + " requires " + std::to_string(num_values) +
+           " values\n";
 }
 
-inline void positional_not_given(std::string name)
+inline std::string option_not_given(std::string name)
 {
-    std::cout << "Error getting positional. " << name << " was not given!"
-              << std::endl;
+    return "Error getting value. Option " + name + " was not given!\n";
 }
 
-inline void positionals_start_index()
+inline std::string positional_not_given(std::string name)
 {
-    std::cout << "Positional arguments' ids start from 1" << std::endl;
+    return "Error getting positional. " + name + " was not given!\n";
 }
 
-inline void postional_index_too_big()
+inline std::string positionals_start_index()
 {
-    std::cout << "positional id to big!" << std::endl;
+    return "Positional arguments' ids start from 1\n";
+}
+
+inline std::string postional_index_too_big()
+{
+    return "positional id to big!\n";
 }
 
 }  // namespace ErrorMessages

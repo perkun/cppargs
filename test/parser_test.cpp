@@ -80,17 +80,16 @@ TEST(ParserTest, SingleOption)
 
 TEST(ParserTest, SingleOptionValueNotGiven)
 {
-    testing::internal::CaptureStdout();
+    testing::internal::CaptureStderr();
     Parser parser;
     parser.add_option('f', "foo", "foo option, not required", false, "42");
 
     std::vector<std::string> cmd_line = {"cppargsTEST", "-f"};
 
     Args args = parser.parse_args(cmd_line);
-    std::string output = testing::internal::GetCapturedStdout();
+    std::string captured_error = testing::internal::GetCapturedStderr();
 
-//     EXPECT_STREQ(ErrorMessages::option_requires_value("foo"), output.c_str());
-
+    EXPECT_STREQ(ErrorMessages::option_requires_value("foo").c_str(), captured_error.c_str());
     EXPECT_FALSE(parser.is_ok());
 }
 
