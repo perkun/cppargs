@@ -109,20 +109,29 @@ void Parser::add_positional_list(std::string long_name, std::string description)
     positional_list.required = true;
 }
 
-
 Args Parser::parse_args(int argc, char *argv[])
+{
+    std::vector<std::string> cmd_line;
+    for(int i = 0; i < argc; i++)
+    {
+        cmd_line.push_back(std::string(argv[i]));
+    }
+    return parse_args(cmd_line);
+}
+
+Args Parser::parse_args(std::vector<std::string> cmd_line)
 {
     Args args;
 
-    occupied_positions.reserve(argc);
-    for (int i = 0; i < argc; i++)
+    occupied_positions.reserve(cmd_line.size());
+    for (int i = 0; i < cmd_line.size(); i++)
         occupied_positions.emplace_back(false);
 
-    program_name = argv[0];
-    args.program_name = argv[0];
+    program_name = cmd_line[0];
+    args.program_name = cmd_line[0];
     compose_help();
 
-    args.flags = parse_flags(argc, argv);
+    args.flags = parse_flags(cmd_line);
 
     if (args["help"])
     {
@@ -130,9 +139,9 @@ Args Parser::parse_args(int argc, char *argv[])
         exit(1);
     }
 
-    args.options = parse_options(argc, argv);
-    args.vec_options = parse_vec_options(argc, argv);
-    args.positionals = parse_positional(argc, argv); // has to be last!!
+    args.options = parse_options(cmd_line);
+    args.vec_options = parse_vec_options(cmd_line);
+    args.positionals = parse_positional(cmd_line); // has to be last!!
 
     // check if positionals were given
     for (Positional pos : defined_args.positionals)
@@ -158,8 +167,9 @@ Args Parser::parse_args(int argc, char *argv[])
 }
 
 
-std::vector<Flag> Parser::parse_flags(int argc, char *argv[])
+std::vector<Flag> Parser::parse_flags(std::vector<std::string> cmd_line)
 {
+    int argc = cmd_line.size();
     std::vector<Flag> flags;
 
     for (Flag defined_flag : defined_args.flags)
@@ -175,8 +185,8 @@ std::vector<Flag> Parser::parse_flags(int argc, char *argv[])
         for (int i = 1; i < argc; i++)
         {
 
-            if (regex_match(argv[i], long_regex) ||
-                regex_match(argv[i], short_regex))
+            if (regex_match(cmd_line[i], long_regex) ||
+                regex_match(cmd_line[i], short_regex))
             {
                 flag.status = true;
                 occupied_positions[i] = true;
@@ -190,8 +200,9 @@ std::vector<Flag> Parser::parse_flags(int argc, char *argv[])
 }
 
 
-std::vector<Option> Parser::parse_options(int argc, char *argv[])
+std::vector<Option> Parser::parse_options(std::vector<std::string> cmd_line)
 {
+    int argc = cmd_line.size();
     std::vector<Option> options;
 
     for (Option defined_option : defined_args.options)
@@ -207,17 +218,17 @@ std::vector<Option> Parser::parse_options(int argc, char *argv[])
         for (int i = 1; i < argc; i++)
         {
 
-            if (regex_match(argv[i], long_regex) ||
-                regex_match(argv[i], short_regex))
+            if (regex_match(cmd_line[i], long_regex) ||
+                regex_match(cmd_line[i], short_regex))
             {
                 if (i == argc - 1 ||
-                    regex_match(argv[i + 1], regex("--?[a-zA-Z]*")))
+                    regex_match(cmd_line[i + 1], regex("--?[a-zA-Z]*")))
                 {
                     ErrorMessages::option_requires_value(option.long_name);
                     exit(1);
                 }
 
-                option.value = argv[i + 1];
+                option.value = cmd_line[i + 1];
                 found = true;
                 occupied_positions[i] = true;
                 occupied_positions[i + 1] = true;
@@ -237,8 +248,9 @@ std::vector<Option> Parser::parse_options(int argc, char *argv[])
 }
 
 
-std::vector<VectorOption> Parser::parse_vec_options(int argc, char *argv[])
+std::vector<VectorOption> Parser::parse_vec_options(std::vector<std::string> cmd_line)
 {
+    int argc = cmd_line.size();
     std::vector<VectorOption> vec_options;
 
     for (VectorOption defined_vec_option : defined_args.vec_options)
@@ -260,13 +272,13 @@ std::vector<VectorOption> Parser::parse_vec_options(int argc, char *argv[])
 
         for (int i = 1; i < argc; i++)
         {
-            if (regex_match(argv[i], long_regex) ||
-                regex_match(argv[i], short_regex))
+            if (regex_match(cmd_line[i], long_regex) ||
+                regex_match(cmd_line[i], short_regex))
             {
                 if (i >= argc - vec_opt.num_values ||
-                    regex_match(argv[i + 1], regex("--?[a-zA-Z]*")) ||
-                    regex_match(argv[i + 2], regex("--?[a-zA-Z]*")) ||
-                    regex_match(argv[i + 3], regex("--?[a-zA-Z]*")))
+                    regex_match(cmd_line[i + 1], regex("--?[a-zA-Z]*")) ||
+                    regex_match(cmd_line[i + 2], regex("--?[a-zA-Z]*")) ||
+                    regex_match(cmd_line[i + 3], regex("--?[a-zA-Z]*")))
                 {
                     ErrorMessages::invalid_num_of_values(vec_opt.long_name,
                                                          vec_opt.num_values);
@@ -276,7 +288,7 @@ std::vector<VectorOption> Parser::parse_vec_options(int argc, char *argv[])
                 occupied_positions[i] = true;
                 for (int j = 1; j <= vec_opt.num_values; j++)
                 {
-                    vec_opt.value_vec.push_back(argv[i + j]);
+                    vec_opt.value_vec.push_back(cmd_line[i + j]);
                     occupied_positions[i + j] = true;
                 }
 
@@ -297,7 +309,7 @@ std::vector<VectorOption> Parser::parse_vec_options(int argc, char *argv[])
 }
 
 
-std::vector<Positional> Parser::parse_positional(int argc, char *argv[])
+std::vector<Positional> Parser::parse_positional(std::vector<std::string> cmd_line)
 {
     std::vector<Positional> positionals;
 
@@ -305,7 +317,7 @@ std::vector<Positional> Parser::parse_positional(int argc, char *argv[])
     {
         if (occupied_positions[i] == false)
         {
-            Positional p(argv[i], i);
+            Positional p(cmd_line[i], i);
 
             for (Positional &dp : defined_args.positionals)
                 if (dp.position == positionals.size())
