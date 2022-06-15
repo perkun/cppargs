@@ -7,6 +7,8 @@
 #include "utils.h"
 #include "ErrorMessages.h"
 
+using ErrorMessages::print_error;
+
 class Args
 {
     friend class Parser;
@@ -20,8 +22,8 @@ public:
     T get_value(std::string name)
     {
         if (!this->operator[](name)) {
-            ErrorMessages::option_not_given(name);
-            exit(1);
+            print_error(ErrorMessages::option_not_given(name));
+            return T();
         }
 
         std::string value;
@@ -39,8 +41,8 @@ public:
     std::vector<T> get_vec_values(std::string name)
     {
         if (!this->operator[](name)) {
-            ErrorMessages::option_not_given(name);
-            exit(1);
+            print_error(ErrorMessages::option_not_given(name));
+            return T();
         }
 
         std::vector<T> return_values;
@@ -63,10 +65,10 @@ public:
     {
         if (position < 1) {
             ErrorMessages::positionals_start_index();
-            exit(1);
+            return T();
         } else if (position >= positionals.size()) {
             ErrorMessages::postional_index_too_big();
-            exit(1);
+            return T();
         }
 
         return utils::convert_value<T>(positionals[position].value);
@@ -75,25 +77,27 @@ public:
     template <typename T>
     T get_positional(std::string name)
     {
-        if (!this->operator[](name)) {
-            ErrorMessages::positional_not_given(name);
-            exit(1);
-        }
-
-        for (Positional &p : positionals) {
-            if (p.long_name == name) {
+        for (Positional &p : positionals)
+        {
+            if (p.long_name == name)
+            {
                 return utils::convert_value<T>(p.value);
             }
         }
-        return "";
+
+        print_error(ErrorMessages::positional_not_given(name));
+        return T();
     }
 
     template <typename T>
-    std::vector<T> get_all_positionals(int start_pos = 0)
+    std::vector<T> get_all_positionals(int start_pos = 1)
     {
         std::vector<T> return_values;
+        return_values.push_back(program_name);
         for (int i = start_pos; i < positionals.size(); i++)
+        {
             return_values.push_back(get_positional<T>(i));
+        }
         return return_values;
     }
 
