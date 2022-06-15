@@ -320,10 +320,17 @@ std::vector<VectorOption> Parser::parse_vec_options(std::vector<std::string> cmd
             if (regex_match(cmd_line[i], long_regex) ||
                 regex_match(cmd_line[i], short_regex))
             {
-                if (i >= argc - vec_opt.num_values ||
-                    regex_match(cmd_line[i + 1], regex("--?[a-zA-Z]*")) ||
-                    regex_match(cmd_line[i + 2], regex("--?[a-zA-Z]*")) ||
-                    regex_match(cmd_line[i + 3], regex("--?[a-zA-Z]*")))
+                bool is_enough_values_given = (i < argc - vec_opt.num_values);
+
+                for (int j = i+1; j < argc; j++)
+                {
+                    if (regex_match(cmd_line[j], regex("--?[a-zA-Z]*")))
+                    {
+                        is_enough_values_given = false;
+                    }
+                }
+
+                if (not is_enough_values_given)
                 {
                     print_error(ErrorMessages::invalid_num_of_values(vec_opt.long_name,
                                 vec_opt.num_values));
