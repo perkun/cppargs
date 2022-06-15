@@ -42,7 +42,7 @@ public:
     {
         if (!this->operator[](name)) {
             print_error(ErrorMessages::option_not_given(name));
-            return T();
+            return std::vector<T>();
         }
 
         std::vector<T> return_values;

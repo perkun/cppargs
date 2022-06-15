@@ -42,6 +42,13 @@ bool Parser::is_valid(std::string long_name)
         return false;
     }
 
+    if (long_name.size() < 2)
+    {
+        print_error(ErrorMessages::long_name_too_short(long_name));
+        parsing_failed();
+        return false;
+    }
+
     return true;
 }
 

@@ -22,6 +22,12 @@ inline std::string long_name_taken(std::string long_name)
            "' is already specified\n";
 }
 
+inline std::string long_name_too_short(std::string long_name)
+{
+    return "Long names '" + long_name +
+           "' is too short.\n";
+}
+
 inline std::string name_with_spaces(std::string long_name)
 {
     return "Names cannot contain spaces (" + long_name + ")\n";

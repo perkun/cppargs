@@ -98,6 +98,57 @@ TEST(ParserTest, OptionValueNotGiven)
     EXPECT_FALSE(parser.is_ok());
 }
 
+TEST(ParserTest, OptionShortNameTaken)
+{
+    testing::internal::CaptureStderr();
+    Parser parser;
+    parser.add_option('f', "foo", "foo option, not required", false, "42");
+    parser.add_option('f', "bar", "bar option, not required", false, "123");
+
+    std::vector<std::string> cmd_line = {"cppargsTEST", "-f", "421"};
+
+    Args args = parser.parse_args(cmd_line);
+    std::string captured_error = testing::internal::GetCapturedStderr();
+
+    EXPECT_STREQ(ErrorMessages::short_name_taken('f').c_str(),
+                 captured_error.c_str());
+    EXPECT_FALSE(parser.is_ok());
+}
+
+TEST(ParserTest, OptionLongNameTaken)
+{
+    testing::internal::CaptureStderr();
+    Parser parser;
+    parser.add_option('f', "foo", "foo option, not required", false, "42");
+    parser.add_option('b', "foo", "bar option, not required", false, "123");
+
+    std::vector<std::string> cmd_line = {"cppargsTEST", "-f", "421"};
+
+    Args args = parser.parse_args(cmd_line);
+    std::string captured_error = testing::internal::GetCapturedStderr();
+
+    EXPECT_STREQ(ErrorMessages::long_name_taken("foo").c_str(),
+                 captured_error.c_str());
+    EXPECT_FALSE(parser.is_ok());
+}
+
+TEST(ParserTest, OptionLongNameTooShort)
+{
+    testing::internal::CaptureStderr();
+    Parser parser;
+    parser.add_option('f', "f", "foo option, not required", false, "42");
+    parser.add_option('b', "bar", "bar option, not required", false, "123");
+
+    std::vector<std::string> cmd_line = {"cppargsTEST", "-f", "421"};
+
+    Args args = parser.parse_args(cmd_line);
+    std::string captured_error = testing::internal::GetCapturedStderr();
+
+    EXPECT_STREQ(ErrorMessages::long_name_too_short("f").c_str(),
+                 captured_error.c_str());
+    EXPECT_FALSE(parser.is_ok());
+}
+
 TEST(ParserTest, OptionRequiredNotSpecified)
 {
     testing::internal::CaptureStderr();
