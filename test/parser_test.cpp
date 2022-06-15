@@ -242,7 +242,6 @@ TEST(ParserTest, VectorOptionRequiredNotGiven)
 
 TEST(ParserTest, PositionalArguments)
 {
-
     std::string first_positional = "in.txt";
     std::string second_positional = "out.dat";
 
@@ -276,12 +275,12 @@ TEST(ParserTest, PositionalArguments)
     EXPECT_STREQ(second_positional.c_str(),
                  args.get_positional<std::string>("output").c_str());
 
-
     testing::internal::CaptureStderr();
     auto foo = args.get_positional<int>("foo");
     std::string captured_error = testing::internal::GetCapturedStderr();
 
-    EXPECT_STREQ(ErrorMessages::positional_not_given("foo").c_str(), captured_error.c_str());
+    EXPECT_STREQ(ErrorMessages::positional_not_given("foo").c_str(),
+                 captured_error.c_str());
 
     EXPECT_TRUE(parser.is_ok());
 }
@@ -300,16 +299,15 @@ TEST(ParserTest, PositionalSpecifiedNotGiven)
     parser.add_positional("output", "A file name for output", 2);
 
     std::vector<std::string> cmd_line = {
-        "cppargsTEST", "--bar", "-f", "1",
-        "2",           "3",     second_positional};
+        "cppargsTEST", "--bar", "-f", "1", "2", "3", second_positional};
 
     Args args = parser.parse_args(cmd_line);
 
     std::string captured_error = testing::internal::GetCapturedStderr();
-    EXPECT_STREQ(ErrorMessages::positional_required("output").c_str(), captured_error.c_str());
+    EXPECT_STREQ(ErrorMessages::positional_required("output").c_str(),
+                 captured_error.c_str());
 
     EXPECT_FALSE(parser.is_ok());
-
 }
 
 // OptionAlreadySpecified

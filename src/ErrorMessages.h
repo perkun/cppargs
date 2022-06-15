@@ -5,10 +5,7 @@
 
 namespace ErrorMessages {
 
-inline void print_error(std::string msg)
-{
-    std::cerr << msg;
-}
+inline void print_error(std::string msg) { std::cerr << msg; }
 
 inline std::string short_name_taken(char short_name)
 {
@@ -24,8 +21,7 @@ inline std::string long_name_taken(std::string long_name)
 
 inline std::string long_name_too_short(std::string long_name)
 {
-    return "Long names '" + long_name +
-           "' is too short.\n";
+    return "Long names '" + long_name + "' is too short.\n";
 }
 
 inline std::string name_with_spaces(std::string long_name)

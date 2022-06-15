@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "Argument.h"
-#include "utils.h"
 #include "ErrorMessages.h"
+#include "utils.h"
 
 using ErrorMessages::print_error;
 
@@ -21,14 +21,16 @@ public:
     template <typename T>
     T get_value(std::string name)
     {
-        if (!this->operator[](name)) {
+        if (!this->operator[](name))
+        {
             print_error(ErrorMessages::option_not_given(name));
             return T();
         }
 
         std::string value;
 
-        for (Option &opt : options) {
+        for (Option &opt : options)
+        {
             if (opt.long_name == name && opt.value != "") value = opt.value;
             if (opt.short_name != "")
                 if (opt.short_name == name && opt.value != "")
@@ -40,7 +42,8 @@ public:
     template <typename T>
     std::vector<T> get_vec_values(std::string name)
     {
-        if (!this->operator[](name)) {
+        if (!this->operator[](name))
+        {
             print_error(ErrorMessages::option_not_given(name));
             return std::vector<T>();
         }
@@ -50,7 +53,8 @@ public:
         {
             if ((opt.long_name == name && opt.value_vec.size() != 0) or
                 ((opt.short_name != "") and
-                 (opt.short_name == name && opt.value_vec.size() != 0))) {
+                 (opt.short_name == name && opt.value_vec.size() != 0)))
+            {
                 for (std::string value : opt.value_vec)
                 {
                     return_values.push_back(utils::convert_value<T>(value));
@@ -63,10 +67,12 @@ public:
     template <typename T>
     T get_positional(int position)
     {
-        if (position < 1) {
+        if (position < 1)
+        {
             ErrorMessages::positionals_start_index();
             return T();
-        } else if (position >= positionals.size()) {
+        } else if (position >= positionals.size())
+        {
             ErrorMessages::postional_index_too_big();
             return T();
         }

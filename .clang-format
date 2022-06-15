@@ -10,5 +10,6 @@ BraceWrapping:
   AfterFunction: true
   AfterClass: true
   SplitEmptyFunction: false
+  AfterControlStatement: true
 
 AccessModifierOffset: -4
