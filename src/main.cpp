@@ -38,6 +38,13 @@ int main(int argc, char *argv[])
     // after defining everything, parse args
     Args args = parser.parse_args(argc, argv);
 
+    // check if any errors occured during parsing. It is advisible to terminate
+    // if so.
+    if (parser.errors_occured())
+    {
+        return 1;
+    }
+
     // check if arument was given
     // a flag
     if (args["count"]) cout << "You can count on me!" << endl;
