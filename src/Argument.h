@@ -57,15 +57,13 @@ public:
 class Positional : public OptionBase
 {
 public:
-    Positional(std::string value, int position)
+    Positional(std::string long_name, std::string value)
     {
         this->value = value;
-        this->position = position;
+        this->long_name = long_name;
     }
 
     std::string value;
-    int position;
-    bool required;
 };
 
 class PositionalList : public OptionBase

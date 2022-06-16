@@ -27,8 +27,8 @@ int main(int argc, char *argv[])
     parser.add_vec_option('p', "pos", "specify position's xyz coordinates", 3,
                           false);
 
-    parser.add_positional("name", "Your name", 1);
-    parser.add_positional("last", "Youe last name", 2);
+    parser.add_positional("name", "Your name");
+    parser.add_positional("last", "Youe last name");
 
     parser.add_positional_list("FILES", "list of files");  // at the end
 
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     cout << endl;
 
     // get first positional argument
-    string name = args.get_positional<string>(1);
+    string name = args.get_positional<string>(0);
 
     // or by name (if defined earlier)
     string last_name = args.get_positional<string>("last");

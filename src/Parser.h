@@ -32,24 +32,22 @@ public:
     void add_vec_option(std::string long_name, std::string description,
                         int num_values, bool requred);
 
-    void add_positional(std::string long_name, std::string description,
-                        int position);
+    void add_positional(std::string long_name, std::string description);
 
     void add_positional_list(std::string long_name, std::string description);
     void add_description(std::string dsc);
 
     Args parse_args(int argc, char *argv[]);
-    Args parse_args(std::vector<std::string> cmd_line);
+    Args parse_args(const std::vector<std::string> &cmd_line);
 
-    bool is_ok() { return is_parsing_successful; }
+    bool errors_occured() { return not is_parsing_successful; }
 
     void print_help();
 
 private:
     bool is_parsing_successful;
     void parsing_failed() { is_parsing_successful = false; }
-    // the ones defined by user
-    Args defined_args;
+    Args user_defined_args;
     std::vector<bool> occupied_positions;
     int num_positionals = 0;
     std::string program_description;
@@ -57,16 +55,17 @@ private:
 
     PositionalList positional_list;
 
-    bool is_valid(char short_name, std::string long_name);
-    bool is_valid(std::string long_name);
+    bool is_valid(char short_name, const std::string &long_name);
+    bool is_valid(const std::string &long_name);
 
-    std::vector<Flag> parse_flags(std::vector<std::string> cmd_line);
-    std::vector<Option> parse_options(std::vector<std::string> cmd_line);
-    std::vector<Positional> parse_positional(std::vector<std::string> cmd_line);
+    std::vector<Flag> parse_flags(const std::vector<std::string> &cmd_line);
+    std::vector<Option> parse_options(const std::vector<std::string> &cmd_line);
+    std::vector<Positional> parse_positional(const std::vector<std::string> &cmd_line);
     std::vector<VectorOption> parse_vec_options(
-        std::vector<std::string> cmd_line);
-
+        const std::vector<std::string> &cmd_line);
     void compose_help();
+
+    void init_occupied_positions(std::vector<std::string> cmd_line);
 };
 
 #endif /* PARSER_H_ */

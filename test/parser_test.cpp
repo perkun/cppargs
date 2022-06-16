@@ -19,7 +19,7 @@ TEST(ParserTest, Flag)
     EXPECT_FALSE(args["foobar"]);
     EXPECT_FALSE(args["a"]);
 
-    EXPECT_TRUE(parser.is_ok());
+    EXPECT_FALSE(parser.errors_occured());
 }
 
 TEST(ParserTest, FlagNotSpecified)
@@ -32,8 +32,51 @@ TEST(ParserTest, FlagNotSpecified)
 
     EXPECT_FALSE(args["f"]);
     // TODO: catch printing of "unknown flag" or sth. To be implemented
-    //     EXPECT_FALSE(parser.is_ok());
+    //     EXPECT_FALSE(parser.errors_occured());
 }
+
+TEST(ParserTest, FlagShortNameTaken)
+{
+    testing::internal::CaptureStderr();
+    Parser parser;
+
+    parser.add_flag('f', "foo", "foo flag");
+    parser.add_flag('f', "bar", "bar flag");
+
+    std::vector<std::string> cmd_line = {"cppargsTEST", "-f"};
+
+    Args args = parser.parse_args(cmd_line);
+
+    std::string captured_error = testing::internal::GetCapturedStderr();
+
+    EXPECT_STREQ(ErrorMessages::short_name_taken('f').c_str(),
+                 captured_error.c_str());
+
+    EXPECT_FALSE(args["f"]);
+    EXPECT_TRUE(parser.errors_occured());
+}
+
+TEST(ParserTest, FlagLongNameTaken)
+{
+    testing::internal::CaptureStderr();
+    Parser parser;
+
+    parser.add_flag('f', "foo", "foo flag");
+    parser.add_flag('b', "foo", "bar flag");
+
+    std::vector<std::string> cmd_line = {"cppargsTEST", "-f"};
+
+    Args args = parser.parse_args(cmd_line);
+
+    std::string captured_error = testing::internal::GetCapturedStderr();
+
+    EXPECT_STREQ(ErrorMessages::long_name_taken("foo").c_str(),
+                 captured_error.c_str());
+
+    EXPECT_FALSE(args["f"]);
+    EXPECT_TRUE(parser.errors_occured());
+}
+
 
 TEST(ParserTest, MultipleFlags)
 {
@@ -59,7 +102,7 @@ TEST(ParserTest, MultipleFlags)
     EXPECT_FALSE(args["foobar"]);
     EXPECT_FALSE(args["a"]);
 
-    EXPECT_TRUE(parser.is_ok());
+    EXPECT_FALSE(parser.errors_occured());
 }
 
 TEST(ParserTest, Option)
@@ -79,7 +122,7 @@ TEST(ParserTest, Option)
     EXPECT_FALSE(args["foobar"]);
     EXPECT_FALSE(args["a"]);
 
-    EXPECT_TRUE(parser.is_ok());
+    EXPECT_FALSE(parser.errors_occured());
 }
 
 TEST(ParserTest, OptionValueNotGiven)
@@ -95,7 +138,7 @@ TEST(ParserTest, OptionValueNotGiven)
 
     EXPECT_STREQ(ErrorMessages::option_requires_value("foo").c_str(),
                  captured_error.c_str());
-    EXPECT_FALSE(parser.is_ok());
+    EXPECT_TRUE(parser.errors_occured());
 }
 
 TEST(ParserTest, OptionShortNameTaken)
@@ -112,7 +155,7 @@ TEST(ParserTest, OptionShortNameTaken)
 
     EXPECT_STREQ(ErrorMessages::short_name_taken('f').c_str(),
                  captured_error.c_str());
-    EXPECT_FALSE(parser.is_ok());
+    EXPECT_TRUE(parser.errors_occured());
 }
 
 TEST(ParserTest, OptionLongNameTaken)
@@ -129,7 +172,7 @@ TEST(ParserTest, OptionLongNameTaken)
 
     EXPECT_STREQ(ErrorMessages::long_name_taken("foo").c_str(),
                  captured_error.c_str());
-    EXPECT_FALSE(parser.is_ok());
+    EXPECT_TRUE(parser.errors_occured());
 }
 
 TEST(ParserTest, OptionLongNameTooShort)
@@ -146,7 +189,7 @@ TEST(ParserTest, OptionLongNameTooShort)
 
     EXPECT_STREQ(ErrorMessages::long_name_too_short("f").c_str(),
                  captured_error.c_str());
-    EXPECT_FALSE(parser.is_ok());
+    EXPECT_TRUE(parser.errors_occured());
 }
 
 TEST(ParserTest, OptionRequiredNotSpecified)
@@ -162,7 +205,7 @@ TEST(ParserTest, OptionRequiredNotSpecified)
 
     EXPECT_STREQ(ErrorMessages::option_required("foo").c_str(),
                  captured_error.c_str());
-    EXPECT_FALSE(parser.is_ok());
+    EXPECT_TRUE(parser.errors_occured());
 }
 
 TEST(ParserTest, VectorOption)
@@ -186,7 +229,7 @@ TEST(ParserTest, VectorOption)
     EXPECT_FALSE(args["foobar"]);
     EXPECT_FALSE(args["a"]);
 
-    EXPECT_TRUE(parser.is_ok());
+    EXPECT_FALSE(parser.errors_occured());
 }
 
 TEST(ParserTest, VectorOptionInvalidValues)
@@ -202,7 +245,7 @@ TEST(ParserTest, VectorOptionInvalidValues)
 
     EXPECT_STREQ(ErrorMessages::specified_invalid_num_of_values("foo").c_str(),
                  captured_error.c_str());
-    EXPECT_FALSE(parser.is_ok());
+    EXPECT_TRUE(parser.errors_occured());
 }
 
 TEST(ParserTest, VectorOptionWrongNumOfValuesGiven)
@@ -220,7 +263,7 @@ TEST(ParserTest, VectorOptionWrongNumOfValuesGiven)
 
     EXPECT_STREQ(ErrorMessages::invalid_num_of_values("foo", 4).c_str(),
                  captured_error.c_str());
-    EXPECT_FALSE(parser.is_ok());
+    EXPECT_TRUE(parser.errors_occured());
 }
 
 TEST(ParserTest, VectorOptionRequiredNotGiven)
@@ -237,7 +280,7 @@ TEST(ParserTest, VectorOptionRequiredNotGiven)
 
     EXPECT_STREQ(ErrorMessages::option_required("foo").c_str(),
                  captured_error.c_str());
-    EXPECT_FALSE(parser.is_ok());
+    EXPECT_TRUE(parser.errors_occured());
 }
 
 TEST(ParserTest, PositionalArguments)
@@ -248,8 +291,8 @@ TEST(ParserTest, PositionalArguments)
     Parser parser;
     parser.add_vec_option('f', "foo", "vector option, not required", 3, true);
     parser.add_flag("bar", "bar flag");
-    parser.add_positional("input", "A file name for input", 1);
-    parser.add_positional("output", "A file name for output", 2);
+    parser.add_positional("input", "A file name for input");
+    parser.add_positional("output", "A file name for output");
 
     std::vector<std::string> cmd_line = {
         "cppargsTEST", "--bar", first_positional, "-f", "1",
@@ -257,18 +300,18 @@ TEST(ParserTest, PositionalArguments)
 
     Args args = parser.parse_args(cmd_line);
 
-    EXPECT_EQ(3, args.num_positionals());
+    EXPECT_EQ(2, args.num_positionals());
 
     EXPECT_STREQ(first_positional.c_str(),
-                 args.get_positional<std::string>(1).c_str());
+                 args.get_positional<std::string>(0).c_str());
     EXPECT_STREQ(second_positional.c_str(),
-                 args.get_positional<std::string>(2).c_str());
+                 args.get_positional<std::string>(1).c_str());
 
     std::vector<std::string> positionals =
         args.get_all_positionals<std::string>();
 
-    EXPECT_STREQ(first_positional.c_str(), positionals.at(1).c_str());
-    EXPECT_STREQ(second_positional.c_str(), positionals.at(2).c_str());
+    EXPECT_STREQ(first_positional.c_str(), positionals.at(0).c_str());
+    EXPECT_STREQ(second_positional.c_str(), positionals.at(1).c_str());
 
     EXPECT_STREQ(first_positional.c_str(),
                  args.get_positional<std::string>("input").c_str());
@@ -282,7 +325,7 @@ TEST(ParserTest, PositionalArguments)
     EXPECT_STREQ(ErrorMessages::positional_not_given("foo").c_str(),
                  captured_error.c_str());
 
-    EXPECT_TRUE(parser.is_ok());
+    EXPECT_FALSE(parser.errors_occured());
 }
 
 TEST(ParserTest, PositionalSpecifiedNotGiven)
@@ -295,8 +338,8 @@ TEST(ParserTest, PositionalSpecifiedNotGiven)
     Parser parser;
     parser.add_vec_option('f', "foo", "vector option, not required", 3, true);
     parser.add_flag("bar", "bar flag");
-    parser.add_positional("input", "A file name for input", 1);
-    parser.add_positional("output", "A file name for output", 2);
+    parser.add_positional("input", "A file name for input");
+    parser.add_positional("output", "A file name for output");
 
     std::vector<std::string> cmd_line = {
         "cppargsTEST", "--bar", "-f", "1", "2", "3", second_positional};
@@ -307,7 +350,7 @@ TEST(ParserTest, PositionalSpecifiedNotGiven)
     EXPECT_STREQ(ErrorMessages::positional_required("output").c_str(),
                  captured_error.c_str());
 
-    EXPECT_FALSE(parser.is_ok());
+    EXPECT_TRUE(parser.errors_occured());
 }
 
 // OptionAlreadySpecified

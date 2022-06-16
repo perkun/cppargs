@@ -67,17 +67,7 @@ public:
     template <typename T>
     T get_positional(int position)
     {
-        if (position < 1)
-        {
-            ErrorMessages::positionals_start_index();
-            return T();
-        } else if (position >= positionals.size())
-        {
-            ErrorMessages::postional_index_too_big();
-            return T();
-        }
-
-        return utils::convert_value<T>(positionals[position].value);
+        return utils::convert_value<T>(positionals.at(position).value);
     }
 
     template <typename T>
@@ -96,10 +86,9 @@ public:
     }
 
     template <typename T>
-    std::vector<T> get_all_positionals(int start_pos = 1)
+    std::vector<T> get_all_positionals(int start_pos = 0)
     {
         std::vector<T> return_values;
-        return_values.push_back(program_name);
         for (int i = start_pos; i < positionals.size(); i++)
         {
             return_values.push_back(get_positional<T>(i));
