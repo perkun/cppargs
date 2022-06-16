@@ -9,7 +9,8 @@ TEST(ParserTest, Flag)
     Parser parser;
     parser.add_flag('f', "foo", "foo flag");
 
-    std::vector<std::string> cmd_line = {"cppargsTEST", "-f"};
+    std::vector<std::string> cmd_line = {"cppargsTEST", "-f", "some", "other",
+                                         "stuff"};
 
     Args args = parser.parse_args(cmd_line);
 
@@ -26,7 +27,8 @@ TEST(ParserTest, FlagNotSpecified)
 {
     Parser parser;
 
-    std::vector<std::string> cmd_line = {"cppargsTEST", "-f"};
+    std::vector<std::string> cmd_line = {"cppargsTEST", "only", "positional",
+                                         "args"};
 
     Args args = parser.parse_args(cmd_line);
 
@@ -77,7 +79,6 @@ TEST(ParserTest, FlagLongNameTaken)
     EXPECT_TRUE(parser.errors_occured());
 }
 
-
 TEST(ParserTest, MultipleFlags)
 {
     Parser parser;
@@ -87,6 +88,32 @@ TEST(ParserTest, MultipleFlags)
 
     std::vector<std::string> cmd_line = {"cppargsTEST", "-f", "--bar", "--baz",
                                          "-x"};
+
+    Args args = parser.parse_args(cmd_line);
+
+    EXPECT_TRUE(args["foo"]);
+    EXPECT_TRUE(args["f"]);
+
+    EXPECT_TRUE(args["bar"]);
+    EXPECT_TRUE(args["b"]);
+
+    EXPECT_TRUE(args["baz"]);
+    EXPECT_TRUE(args["z"]);
+
+    EXPECT_FALSE(args["foobar"]);
+    EXPECT_FALSE(args["a"]);
+
+    EXPECT_FALSE(parser.errors_occured());
+}
+
+TEST(ParserTest, MultipleFlagsCombinedShortNames)
+{
+    Parser parser;
+    parser.add_flag('f', "foo", "foo flag");
+    parser.add_flag('b', "bar", "foo flag");
+    parser.add_flag('z', "baz", "foo flag");
+
+    std::vector<std::string> cmd_line = {"cppargsTEST", "-fbz", "-x"};
 
     Args args = parser.parse_args(cmd_line);
 
@@ -212,9 +239,10 @@ TEST(ParserTest, VectorOption)
 {
     Parser parser;
     parser.add_vec_option('f', "foo", "vector option, not required", 3, false);
+    parser.add_flag('b', "bar", "a flag");
 
-    std::vector<std::string> cmd_line = {"cppargsTEST", "-f", "10", "-20",
-                                         "30"};
+    std::vector<std::string> cmd_line = {"cppargsTEST", "-f", "10",
+                                         "-20",         "30", "--bar"};
 
     Args args = parser.parse_args(cmd_line);
 
@@ -232,7 +260,7 @@ TEST(ParserTest, VectorOption)
     EXPECT_FALSE(parser.errors_occured());
 }
 
-TEST(ParserTest, VectorOptionInvalidValues)
+TEST(ParserTest, VectorOptionInvalidNumValues)
 {
     testing::internal::CaptureStderr();
     Parser parser;
@@ -248,7 +276,7 @@ TEST(ParserTest, VectorOptionInvalidValues)
     EXPECT_TRUE(parser.errors_occured());
 }
 
-TEST(ParserTest, VectorOptionWrongNumOfValuesGiven)
+TEST(ParserTest, VectorOptionWrongNumOfValuesGivenSurrounded)
 {
     testing::internal::CaptureStderr();
     Parser parser;
@@ -265,6 +293,24 @@ TEST(ParserTest, VectorOptionWrongNumOfValuesGiven)
                  captured_error.c_str());
     EXPECT_TRUE(parser.errors_occured());
 }
+
+TEST(ParserTest, VectorOptionWrongNumOfValuesGiven)
+{
+    testing::internal::CaptureStderr();
+    Parser parser;
+    parser.add_vec_option('f', "foo", "vector option, not required", 4, false);
+    parser.add_flag("bar", "bar flag");
+
+    std::vector<std::string> cmd_line = {"cppargsTEST", "-f", "1", "2"};
+
+    Args args = parser.parse_args(cmd_line);
+    std::string captured_error = testing::internal::GetCapturedStderr();
+
+    EXPECT_STREQ(ErrorMessages::invalid_num_of_values("foo", 4).c_str(),
+                 captured_error.c_str());
+    EXPECT_TRUE(parser.errors_occured());
+}
+
 
 TEST(ParserTest, VectorOptionRequiredNotGiven)
 {

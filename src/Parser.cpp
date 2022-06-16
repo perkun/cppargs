@@ -146,7 +146,6 @@ Args Parser::parse_args(const std::vector<std::string> &cmd_line)
     }
 
     Args args;
-
     init_occupied_positions(cmd_line);
 
     program_name = cmd_line[0];
@@ -159,8 +158,8 @@ Args Parser::parse_args(const std::vector<std::string> &cmd_line)
     if (args["help"])
     {
         print_help();
-        // TODO: think about it... If user wants to print help, in program you
-        // have to check errors_occured() state...
+        // TODO: think about it... If user wants to print help, then iside a
+        // program you have to check errors_occured() state... Is it an error?
         parsing_failed();
         return Args();
     }
@@ -186,9 +185,25 @@ Args Parser::parse_args(const std::vector<std::string> &cmd_line)
     return args;
 }
 
+std::regex Parser::regex_for_long_name(std::string long_name)
+{
+    return regex("--" + long_name);
+}
+
+std::regex Parser::regex_for_short_name(std::string short_name)
+{
+    if (short_name != "") return regex("-" + short_name);
+    return regex();
+}
+
+std::regex Parser::regex_for_short_name_flag(std::string short_name)
+{
+    if (short_name != "") return regex("-[a-zA-Z]*" + short_name + "[a-zA-Z]*");
+    return regex();
+}
+
 std::vector<Flag> Parser::parse_flags(const std::vector<std::string> &cmd_line)
 {
-    int argc = cmd_line.size();
     std::vector<Flag> flags;
 
     for (Flag defined_flag : user_defined_args.flags)
@@ -196,24 +211,18 @@ std::vector<Flag> Parser::parse_flags(const std::vector<std::string> &cmd_line)
         Flag flag = defined_flag;
         flag.status = false;
 
-        regex long_regex = regex("--" + flag.long_name);
-        regex short_regex;
-        if (flag.short_name != "")
-            short_regex = regex("-[a-zA-Z]*" + flag.short_name + "[a-zA-Z]*");
-
-        for (int i = 1; i < argc; i++)
+        for (int i = 1; i < cmd_line.size(); i++)
         {
-            if (regex_match(cmd_line[i], long_regex) ||
-                regex_match(cmd_line[i], short_regex))
+            if (regex_match(cmd_line[i], regex_for_long_name(flag.long_name)) ||
+                regex_match(cmd_line[i],
+                            regex_for_short_name_flag(flag.short_name)))
             {
                 flag.status = true;
                 occupied_positions[i] = true;
             }
         }
-
         flags.push_back(flag);
     }
-
     return flags;
 }
 
@@ -228,15 +237,12 @@ std::vector<Option> Parser::parse_options(
         Option option = defined_option;
         bool found = false;
 
-        regex long_regex = regex("--" + option.long_name);
-        regex short_regex;
-        if (option.short_name != "")
-            short_regex = regex("-" + option.short_name);
-
         for (int i = 1; i < argc; i++)
         {
-            if (regex_match(cmd_line[i], long_regex) ||
-                regex_match(cmd_line[i], short_regex))
+            if (regex_match(cmd_line[i],
+                            regex_for_long_name(option.long_name)) ||
+                regex_match(cmd_line[i],
+                            regex_for_short_name(option.short_name)))
             {
                 if (i == argc - 1 ||
                     regex_match(cmd_line[i + 1], regex("--?[a-zA-Z]*")))
@@ -286,23 +292,22 @@ std::vector<VectorOption> Parser::parse_vec_options(
             return std::vector<VectorOption>();
         }
 
-        regex long_regex = regex("--" + vec_opt.long_name);
-        regex short_regex;
-        if (defined_vec_option.short_name != "")
-            short_regex = regex("-" + vec_opt.short_name);
-
         for (int i = 1; i < argc; i++)
         {
-            if (regex_match(cmd_line[i], long_regex) ||
-                regex_match(cmd_line[i], short_regex))
+            if (regex_match(cmd_line[i],
+                            regex_for_long_name(vec_opt.long_name)) ||
+                regex_match(cmd_line[i],
+                            regex_for_short_name(vec_opt.short_name)))
             {
                 bool is_enough_values_given = (i < argc - vec_opt.num_values);
-
-                for (int j = i + 1; j < argc; j++)
+                if (is_enough_values_given)
                 {
-                    if (regex_match(cmd_line[j], regex("--?[a-zA-Z]*")))
+                    for (int j = 0; j < vec_opt.num_values; j++)
                     {
-                        is_enough_values_given = false;
+                        if (is_shell_argument(cmd_line[i + 1 + j]))
+                        {
+                            is_enough_values_given = false;
+                        }
                     }
                 }
 
@@ -341,46 +346,51 @@ std::vector<VectorOption> Parser::parse_vec_options(
 std::vector<Positional> Parser::parse_positional(
     const std::vector<std::string> &cmd_line)
 {
-    // TODO:
-    // + remove specifying position when adding positionals
-    // + do not add program name to positionals
-    // - simplify search for positionals
-    // - validate from parse_positional (here)
-
-    std::vector<Positional> positionals;
-    if (user_defined_args.positionals.size() == 0)
+    std::vector<Positional> positionals = collect_positionals(cmd_line);
+    if (not are_positionals_valid(positionals))
     {
-        return positionals;
-    }
-
-    positionals.reserve(user_defined_args.positionals.size());
-
-    unsigned int current_unprocessed_defined_positional = 0;
-    for (int i = 1; i < occupied_positions.size(); i++)
-    {
-        if (not occupied_positions[i])
-        {
-            positionals.emplace_back(
-                user_defined_args.positionals
-                    .at(current_unprocessed_defined_positional)
-                    .long_name,
-                cmd_line[i]);
-            current_unprocessed_defined_positional++;
-        }
+        return std::vector<Positional>();
     }
     num_positionals = positionals.size();
 
+    return positionals;
+}
+
+std::vector<Positional> Parser::collect_positionals(
+    const std::vector<std::string> &cmd_line)
+{
+    std::vector<Positional> positionals;
+    positionals.reserve(user_defined_args.positionals.size());
+
+    unsigned int num_processed_positionals = 0;
+    for (int i = 1; i < occupied_positions.size(); i++)
+    {
+        if (not occupied_positions[i] and (not is_shell_argument(cmd_line[i])))
+        {
+            std::string long_name =
+                num_processed_positionals < user_defined_args.positionals.size()
+                    ? user_defined_args.positionals
+                          .at(num_processed_positionals)
+                          .long_name
+                    : "";
+
+            positionals.emplace_back(long_name, cmd_line[i]);
+            num_processed_positionals++;
+        }
+    }
+    return positionals;
+}
+
+bool Parser::are_positionals_valid(const std::vector<Positional> &positionals)
+{
     if (positionals.size() < user_defined_args.positionals.size())
     {
         print_error(ErrorMessages::positional_required(
-            user_defined_args.positionals
-                .at(current_unprocessed_defined_positional)
-                .long_name));
+            user_defined_args.positionals.at(positionals.size()).long_name));
         parsing_failed();
-        return std::vector<Positional>();
+        return false;
     }
-
-    return positionals;
+    return true;
 }
 
 void Parser::add_description(std::string dsc) { program_description = dsc; }
