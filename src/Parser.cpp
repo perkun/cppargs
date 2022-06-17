@@ -59,13 +59,9 @@ void Parser::add_flag(char short_name, std::string long_name,
     }
 }
 
-// TODO use add_XXX with short_name = ""
 void Parser::add_flag(std::string long_name, std::string description)
 {
-    if (is_name_valid(long_name))
-    {
-        user_defined_args.flags.emplace_back(Flag("", long_name, description));
-    }
+    add_flag('\0', long_name, description);
 }
 
 void Parser::add_option(char short_name, std::string long_name,
@@ -83,11 +79,7 @@ void Parser::add_option(char short_name, std::string long_name,
 void Parser::add_option(std::string long_name, std::string description,
                         bool required, std::string default_value)
 {
-    if (is_name_valid(long_name))
-    {
-        user_defined_args.options.emplace_back("", long_name, description,
-                                               required, default_value);
-    }
+    add_option('\0', long_name, description, required, default_value);
 }
 
 void Parser::add_vec_option(char short_name, std::string long_name,
@@ -105,11 +97,7 @@ void Parser::add_vec_option(char short_name, std::string long_name,
 void Parser::add_vec_option(std::string long_name, std::string description,
                             int num_values, bool requred)
 {
-    if (is_name_valid(long_name))
-    {
-        user_defined_args.vec_options.emplace_back(
-            VectorOption("", long_name, description, num_values, requred));
-    }
+    add_vec_option('\0', long_name, description, num_values, requred);
 }
 
 void Parser::add_positional(std::string long_name, std::string description)
