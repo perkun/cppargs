@@ -1,7 +1,7 @@
 #ifndef PARSER_H_
 #define PARSER_H_
 
-#include <stdio.h>
+#include <cstdio>
 
 #include <cstring>
 #include <regex>
@@ -13,7 +13,7 @@ class Parser
 {
 public:
     Parser();
-    ~Parser();
+    ~Parser() = default;
 
     std::string help_message;
 
@@ -49,7 +49,7 @@ private:
     void parsing_failed() { is_parsing_successful = false; }
     Args user_defined_args;
     std::vector<bool> occupied_positions;
-    int num_positionals = 0;
+    unsigned long num_positionals = 0;
     std::string program_description;
     std::string program_name;
 

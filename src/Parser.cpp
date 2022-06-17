@@ -5,11 +5,9 @@ using std::regex;
 
 Parser::Parser() : is_parsing_successful(true)
 {
-    user_defined_args.flags.push_back(
-        Flag("h", "help", "print this help message"));
+    user_defined_args.flags.emplace_back("h", "help",
+                                         "print this help message");
 }
-
-Parser::~Parser() {}
 
 bool Parser::is_name_valid(char short_name, const std::string &long_name)
 {
@@ -86,6 +84,13 @@ void Parser::add_vec_option(char short_name, std::string long_name,
                             std::string description, int num_values,
                             bool requred)
 {
+    if (num_values < 2)
+    {
+        print_error(ErrorMessages::specified_invalid_num_of_values(long_name));
+        parsing_failed();
+        return;
+    }
+
     if (is_name_valid(short_name, long_name))
     {
         user_defined_args.vec_options.emplace_back(
@@ -131,7 +136,7 @@ Args Parser::parse_args(const std::vector<std::string> &cmd_line)
 {
     if (errors_occured())
     {
-        return Args();
+        return {};
     }
 
     Args args;
@@ -150,7 +155,7 @@ Args Parser::parse_args(const std::vector<std::string> &cmd_line)
         // TODO: think about it... If user wants to print help, then iside a
         // program you have to check errors_occured() state... Is it an error?
         parsing_failed();
-        return Args();
+        return {};
     }
 
     args.options = parse_options(cmd_line);
@@ -163,12 +168,12 @@ Args Parser::parse_args(const std::vector<std::string> &cmd_line)
     {
         print_error(ErrorMessages::list_required(positional_list.long_name));
         parsing_failed();
-        return Args();
+        return {};
     }
 
     if (errors_occured())
     {
-        return Args();
+        return {};
     }
 
     return args;
@@ -204,7 +209,7 @@ std::vector<Option> Parser::parse_options(
     for (Option defined_option : user_defined_args.options)
     {
         Option option = defined_option;
-        bool found, enough_values_given;
+        bool found = false, enough_values_given = false;
 
         extract_option(option, cmd_line, found, enough_values_given);
 
@@ -212,14 +217,14 @@ std::vector<Option> Parser::parse_options(
         {
             print_error(ErrorMessages::option_required(option.long_name));
             parsing_failed();
-            return std::vector<Option>();
+            return {};
         }
 
         if (not enough_values_given)
         {
             print_error(ErrorMessages::option_requires_value(option.long_name));
             parsing_failed();
-            return std::vector<Option>();
+            return {};
         }
 
         options.push_back(option);
@@ -230,22 +235,12 @@ std::vector<Option> Parser::parse_options(
 std::vector<VectorOption> Parser::parse_vec_options(
     const std::vector<std::string> &cmd_line)
 {
-    int argc = cmd_line.size();
     std::vector<VectorOption> vec_options;
 
     for (VectorOption defined_vec_option : user_defined_args.vec_options)
     {
         VectorOption vec_opt = defined_vec_option;
-        bool found, enough_values_given;
-
-        // TODO: move to add_vec_option()
-        if (vec_opt.num_values < 2)
-        {
-            print_error(ErrorMessages::specified_invalid_num_of_values(
-                vec_opt.long_name));
-            parsing_failed();
-            return std::vector<VectorOption>();
-        }
+        bool found = false, enough_values_given = false;
 
         extract_option(vec_opt, cmd_line, found, enough_values_given);
 
@@ -253,7 +248,7 @@ std::vector<VectorOption> Parser::parse_vec_options(
         {
             print_error(ErrorMessages::option_required(vec_opt.long_name));
             parsing_failed();
-            return std::vector<VectorOption>();
+            return {};
         }
 
         if (not enough_values_given)
@@ -261,7 +256,7 @@ std::vector<VectorOption> Parser::parse_vec_options(
             print_error(ErrorMessages::invalid_num_of_values(
                 vec_opt.long_name, vec_opt.num_values));
             parsing_failed();
-            return std::vector<VectorOption>();
+            return {};
         }
 
         vec_options.push_back(vec_opt);
@@ -325,7 +320,7 @@ std::vector<Positional> Parser::parse_positional(
     std::vector<Positional> positionals = collect_positionals(cmd_line);
     if (not are_positionals_valid(positionals))
     {
-        return std::vector<Positional>();
+        return {};
     }
     num_positionals = positionals.size();
 
@@ -391,9 +386,9 @@ void Parser::compose_help()
         ss << " --" << opt.long_name << " " << opt.num_values << " VALUES";
     }
 
-    for (int i = 0; i < user_defined_args.positionals.size(); i++)
+    for (auto &positional : user_defined_args.positionals)
     {
-        ss << " " << user_defined_args.positionals[i].long_name;
+        ss << " " << positional.long_name;
     }
     if (positional_list.required)
         ss << " " << positional_list.long_name << "...";
