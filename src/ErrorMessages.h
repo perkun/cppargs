@@ -44,11 +44,6 @@ inline std::string option_required(std::string long_name)
     return "Option " + long_name + " is required\n";
 }
 
-inline std::string option_requires_value(std::string long_name)
-{
-    return "Option " + long_name + " requires a value\n";
-}
-
 inline std::string specified_invalid_num_of_values(std::string long_name)
 {
     return "Invalid number of values for option " + long_name +
@@ -58,7 +53,7 @@ inline std::string specified_invalid_num_of_values(std::string long_name)
 inline std::string invalid_num_of_values(std::string long_name, int num_values)
 {
     return "Option " + long_name + " requires " + std::to_string(num_values) +
-           " values\n";
+           " value(s)\n";
 }
 
 inline std::string option_not_given(std::string name)

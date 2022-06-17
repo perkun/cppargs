@@ -163,7 +163,7 @@ TEST(ParserTest, OptionValueNotGiven)
     Args args = parser.parse_args(cmd_line);
     std::string captured_error = testing::internal::GetCapturedStderr();
 
-    EXPECT_STREQ(ErrorMessages::option_requires_value("foo").c_str(),
+    EXPECT_STREQ(ErrorMessages::invalid_num_of_values("foo", 1).c_str(),
                  captured_error.c_str());
     EXPECT_TRUE(parser.errors_occured());
 }

@@ -2,7 +2,6 @@
 #define PARSER_H_
 
 #include <cstdio>
-
 #include <cstring>
 #include <regex>
 
@@ -22,10 +21,10 @@ public:
                   std::string description);
 
     void add_option(char short_name, std::string long_name,
-                    std::string description, bool requred,
+                    std::string description, bool required,
                     std::string default_value);
     void add_option(std::string long_name, std::string description,
-                    bool requred, std::string default_value);
+                    bool required, std::string default_value);
 
     void add_vec_option(char short_name, std::string long_name,
                         std::string description, int num_values, bool requred);
@@ -40,9 +39,9 @@ public:
     Args parse_args(int argc, char *argv[]);
     Args parse_args(const std::vector<std::string> &cmd_line);
 
-    bool errors_occured() { return not is_parsing_successful; }
+    bool errors_occured() const { return not is_parsing_successful; }
 
-    void print_help();
+    void print_help() const;
 
 private:
     bool is_parsing_successful;
@@ -59,9 +58,9 @@ private:
     bool is_name_valid(const std::string &long_name);
 
     std::vector<Flag> parse_flags(const std::vector<std::string> &cmd_line);
-    std::vector<Option> parse_options(const std::vector<std::string> &cmd_line);
-    std::vector<VectorOption> parse_vec_options(
-        const std::vector<std::string> &cmd_line);
+    template <typename T>
+    std::vector<T> parse_options(const std::vector<std::string> &cmd_line,
+                                 const std::vector<T> &user_defined_options);
     std::vector<Positional> parse_positional(
         const std::vector<std::string> &cmd_line);
 
@@ -71,7 +70,7 @@ private:
 
     void compose_help();
 
-    bool is_shell_argument(const std::string &str)
+    static bool is_shell_argument(const std::string &str)
     {
         return regex_match(str, std::regex("--?[a-zA-Z]*"));
     }
@@ -80,7 +79,7 @@ private:
     std::vector<Positional> collect_positionals(
         const std::vector<std::string> &cmd_line);
     bool are_positionals_valid(const std::vector<Positional> &positionals);
-    bool is_num_values_correct(int defined_num_values, int current_position,
+    static bool is_num_values_correct(int defined_num_values, int current_position,
                                const std::vector<std::string> &cmd_line);
 };
 

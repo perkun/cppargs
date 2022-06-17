@@ -30,7 +30,7 @@ bool Parser::is_name_valid(const std::string &long_name)
         return false;
     }
 
-    if (long_name.find(' ') != long_name.npos)
+    if (long_name.find(' ') != std::string::npos)
     {
         print_error(ErrorMessages::name_with_spaces(long_name));
         parsing_failed();
@@ -127,11 +127,6 @@ Args Parser::parse_args(int argc, char *argv[])
     return parse_args(std::vector<std::string>(argv, argv + argc));
 }
 
-void Parser::init_occupied_positions(std::vector<std::string> cmd_line)
-{
-    occupied_positions.assign(cmd_line.size(), false);
-}
-
 Args Parser::parse_args(const std::vector<std::string> &cmd_line)
 {
     if (errors_occured())
@@ -158,8 +153,9 @@ Args Parser::parse_args(const std::vector<std::string> &cmd_line)
         return {};
     }
 
-    args.options = parse_options(cmd_line);
-    args.vec_options = parse_vec_options(cmd_line);
+    args.options = parse_options<Option>(cmd_line, user_defined_args.options);
+    args.vec_options =
+        parse_options<VectorOption>(cmd_line, user_defined_args.vec_options);
     args.positionals = parse_positional(cmd_line);  // has to be last!!
 
     // TODO: extract to func
@@ -177,6 +173,11 @@ Args Parser::parse_args(const std::vector<std::string> &cmd_line)
     }
 
     return args;
+}
+
+void Parser::init_occupied_positions(std::vector<std::string> cmd_line)
+{
+    occupied_positions.assign(cmd_line.size(), false);
 }
 
 std::vector<Flag> Parser::parse_flags(const std::vector<std::string> &cmd_line)
@@ -201,15 +202,17 @@ std::vector<Flag> Parser::parse_flags(const std::vector<std::string> &cmd_line)
     return flags;
 }
 
-std::vector<Option> Parser::parse_options(
-    const std::vector<std::string> &cmd_line)
+template <typename T>
+std::vector<T> Parser::parse_options(const std::vector<std::string> &cmd_line,
+                                     const std::vector<T> &user_defined_options)
 {
-    std::vector<Option> options;
+    std::vector<T> options;
 
-    for (Option defined_option : user_defined_args.options)
+    for (T defined_option : user_defined_options)
     {
-        Option option = defined_option;
-        bool found = false, enough_values_given = false;
+        T option = defined_option;
+        bool found = false;
+        bool enough_values_given = false;
 
         extract_option(option, cmd_line, found, enough_values_given);
 
@@ -222,7 +225,8 @@ std::vector<Option> Parser::parse_options(
 
         if (not enough_values_given)
         {
-            print_error(ErrorMessages::option_requires_value(option.long_name));
+            print_error(ErrorMessages::invalid_num_of_values(
+                option.long_name, option.num_values));
             parsing_failed();
             return {};
         }
@@ -230,39 +234,6 @@ std::vector<Option> Parser::parse_options(
         options.push_back(option);
     }
     return options;
-}
-
-std::vector<VectorOption> Parser::parse_vec_options(
-    const std::vector<std::string> &cmd_line)
-{
-    std::vector<VectorOption> vec_options;
-
-    for (VectorOption defined_vec_option : user_defined_args.vec_options)
-    {
-        VectorOption vec_opt = defined_vec_option;
-        bool found = false, enough_values_given = false;
-
-        extract_option(vec_opt, cmd_line, found, enough_values_given);
-
-        if (vec_opt.required && !found)
-        {
-            print_error(ErrorMessages::option_required(vec_opt.long_name));
-            parsing_failed();
-            return {};
-        }
-
-        if (not enough_values_given)
-        {
-            print_error(ErrorMessages::invalid_num_of_values(
-                vec_opt.long_name, vec_opt.num_values));
-            parsing_failed();
-            return {};
-        }
-
-        vec_options.push_back(vec_opt);
-    }
-
-    return vec_options;
 }
 
 void Parser::extract_option(OptionBase &option,
@@ -376,13 +347,19 @@ void Parser::compose_help()
 
     for (Option &opt : user_defined_args.options)
     {
-        if (!opt.required) continue;
+        if (!opt.required)
+        {
+            continue;
+        }
         ss << " --" << opt.long_name << " VALUE";
     }
 
     for (VectorOption &opt : user_defined_args.vec_options)
     {
-        if (!opt.required) continue;
+        if (!opt.required)
+        {
+            continue;
+        }
         ss << " --" << opt.long_name << " " << opt.num_values << " VALUES";
     }
 
@@ -391,40 +368,57 @@ void Parser::compose_help()
         ss << " " << positional.long_name;
     }
     if (positional_list.required)
+    {
         ss << " " << positional_list.long_name << "...";
+    }
     ss << std::endl << std::endl;
 
     ss << "FLAGS: " << std::endl;
     for (Flag &f : user_defined_args.flags)
     {
-        if (f.short_name == "")
+        if (f.short_name.empty())
+        {
             ss << "    ";
-        else
+        } else
+        {
             ss << "-" << f.short_name << ", ";
+        }
         ss << "--" << f.long_name << "\t" << f.description << std::endl;
     }
 
     ss << std::endl << "OPTIONS (required):" << std::endl;
     for (Option &opt : user_defined_args.options)
     {
-        if (!opt.required) continue;
+        if (!opt.required)
+        {
+            continue;
+        }
 
-        if (opt.short_name == "")
+        if (opt.short_name.empty())
+        {
             ss << "    ";
-        else
+        } else
+        {
             ss << "-" << opt.short_name << ", ";
+        }
         ss << "--" << opt.long_name << " VALUE"
            << "\t" << opt.description << std::endl;
     }
 
     for (VectorOption &opt : user_defined_args.vec_options)
     {
-        if (!opt.required) continue;
+        if (!opt.required)
+        {
+            continue;
+        }
 
-        if (opt.short_name == "")
+        if (opt.short_name.empty())
+        {
             ss << "    ";
-        else
+        } else
+        {
             ss << "-" << opt.short_name << ", ";
+        }
         ss << "--" << opt.long_name << " " << opt.num_values << " VALUES"
            << "\t" << opt.description << std::endl;
     }
@@ -432,24 +426,36 @@ void Parser::compose_help()
     ss << std::endl << "OPTIONS:" << std::endl;
     for (Option &opt : user_defined_args.options)
     {
-        if (opt.required) continue;
+        if (opt.required)
+        {
+            continue;
+        }
 
-        if (opt.short_name == "")
+        if (opt.short_name.empty())
+        {
             ss << "    ";
-        else
+        } else
+        {
             ss << "-" << opt.short_name << ", ";
+        }
         ss << "--" << opt.long_name << " VALUE"
            << "\t" << opt.description << std::endl;
     }
 
     for (VectorOption &opt : user_defined_args.vec_options)
     {
-        if (opt.required) continue;
+        if (opt.required)
+        {
+            continue;
+        }
 
-        if (opt.short_name == "")
+        if (opt.short_name.empty())
+        {
             ss << "    ";
-        else
+        } else
+        {
             ss << "-" << opt.short_name << ", ";
+        }
         ss << "--" << opt.long_name << " " << opt.num_values << " VALUES"
            << "\t" << opt.description << std::endl;
     }
@@ -461,12 +467,14 @@ void Parser::compose_help()
     }
     ss << std::endl;
     if (positional_list.required)
+    {
         ss << positional_list.long_name << "\t" << positional_list.description
            << std::endl;
+    }
 
     ss << std::endl;
 
     help_message = ss.str();
 }
 
-void Parser::print_help() { std::cout << help_message; }
+void Parser::print_help() const { std::cout << help_message; }
