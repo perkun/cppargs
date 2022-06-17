@@ -5,15 +5,13 @@
 #include <string>
 #include <vector>
 
-class OptionBase
+class CmdLineArgumentBase
 {
 public:
-    OptionBase(){};
-    OptionBase(std::string short_name, std::string long_name,
-               std::string description)
-        : short_name(short_name),
-          long_name(long_name),
-          description(description)
+    CmdLineArgumentBase(){};
+    CmdLineArgumentBase(std::string short_name, std::string long_name,
+                        std::string description)
+        : short_name(short_name), long_name(long_name), description(description)
     {}
     std::string short_name;
     std::string long_name, description;
@@ -34,11 +32,11 @@ public:
     }
 };
 
-class Flag : public OptionBase
+class Flag : public CmdLineArgumentBase
 {
 public:
     Flag(std::string short_name, std::string long_name, std::string description)
-        : OptionBase(short_name, long_name, description)
+        : CmdLineArgumentBase(short_name, long_name, description)
     {
         num_values = 0;
     }
@@ -52,20 +50,35 @@ public:
     }
 };
 
+class OptionBase : public CmdLineArgumentBase
+{
+public:
+    OptionBase(std::string short_name, std::string long_name,
+               std::string description, bool required)
+        : required(required),
+          CmdLineArgumentBase(short_name, long_name, description)
+    {}
+    bool required;
+    virtual void set_value(std::string val) = 0;
+};
+
 class Option : public OptionBase
 {
 public:
     Option(std::string short_name, std::string long_name,
            std::string description, bool required, std::string default_value)
-        : required(required),
-          value(default_value),
-          OptionBase(short_name, long_name, description)
+        : value(default_value),
+          OptionBase(short_name, long_name, description, required)
 
     {
         num_values = 1;
     }
     std::string value;
-    bool required;
+
+    void set_value(std::string val)
+    {
+        value = val;
+    }
 };
 
 class VectorOption : public OptionBase
@@ -73,16 +86,22 @@ class VectorOption : public OptionBase
 public:
     VectorOption(std::string short_name, std::string long_name,
                  std::string description, int num_values, bool required)
-        : required(required), OptionBase(short_name, long_name, description)
+        : OptionBase(short_name, long_name, description, required)
     {
         this->num_values = num_values;
     }
 
     std::vector<std::string> value_vec;
-    bool required;
+
+    void set_value(std::string val)
+    {
+        value_vec.push_back(val);
+    }
+private:
+
 };
 
-class Positional : public OptionBase
+class Positional : public CmdLineArgumentBase
 {
 public:
     Positional(std::string long_name, std::string value)
@@ -94,7 +113,7 @@ public:
     std::string value;
 };
 
-class PositionalList : public OptionBase
+class PositionalList : public CmdLineArgumentBase
 {
 public:
     PositionalList() {}

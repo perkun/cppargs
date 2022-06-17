@@ -65,7 +65,7 @@ private:
     std::vector<Positional> parse_positional(
         const std::vector<std::string> &cmd_line);
 
-    void extract_option(Option &option,
+    void extract_option(OptionBase &option,
                         const std::vector<std::string> &cmd_line, bool &found,
                         bool &enough_values_given);
 

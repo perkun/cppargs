@@ -59,6 +59,7 @@ void Parser::add_flag(char short_name, std::string long_name,
     }
 }
 
+// TODO use add_XXX with short_name = ""
 void Parser::add_flag(std::string long_name, std::string description)
 {
     if (is_name_valid(long_name))
@@ -249,6 +250,7 @@ std::vector<VectorOption> Parser::parse_vec_options(
         VectorOption vec_opt = defined_vec_option;
         bool found, enough_values_given;
 
+        // TODO: move to add_vec_option()
         if (vec_opt.num_values < 2)
         {
             print_error(ErrorMessages::specified_invalid_num_of_values(
@@ -257,32 +259,19 @@ std::vector<VectorOption> Parser::parse_vec_options(
             return std::vector<VectorOption>();
         }
 
-        for (int i = 1; i < argc; i++)
-        {
-            if (vec_opt.is_cmd_line_item(cmd_line[i]))
-            {
-                if (not is_num_values_correct(vec_opt.num_values, i, cmd_line))
-                {
-                    print_error(ErrorMessages::invalid_num_of_values(
-                        vec_opt.long_name, vec_opt.num_values));
-                    parsing_failed();
-                    return std::vector<VectorOption>();
-                }
-
-                occupied_positions[i] = true;
-                for (int j = 1; j <= vec_opt.num_values; j++)
-                {
-                    vec_opt.value_vec.push_back(cmd_line[i + j]);
-                    occupied_positions[i + j] = true;
-                }
-
-                found = true;
-            }
-        }
+        extract_option(vec_opt, cmd_line, found, enough_values_given);
 
         if (vec_opt.required && !found)
         {
             print_error(ErrorMessages::option_required(vec_opt.long_name));
+            parsing_failed();
+            return std::vector<VectorOption>();
+        }
+
+        if (not enough_values_given)
+        {
+            print_error(ErrorMessages::invalid_num_of_values(
+                vec_opt.long_name, vec_opt.num_values));
             parsing_failed();
             return std::vector<VectorOption>();
         }
@@ -293,7 +282,7 @@ std::vector<VectorOption> Parser::parse_vec_options(
     return vec_options;
 }
 
-void Parser::extract_option(Option &option,
+void Parser::extract_option(OptionBase &option,
                             const std::vector<std::string> &cmd_line,
                             bool &found, bool &enough_values_given)
 {
@@ -313,9 +302,13 @@ void Parser::extract_option(Option &option,
             }
 
             found = true;
-            option.value = cmd_line[i + 1];
-            occupied_positions[i] = true;
-            occupied_positions[i + 1] = true;
+
+            occupied_positions.at(i) = true;
+            for (int j = 1; j <= option.num_values; j++)
+            {
+                option.set_value(cmd_line[i + j]);
+                occupied_positions[i + j] = true;
+            }
         }
     }
 }
