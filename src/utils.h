@@ -1,3 +1,4 @@
+#include <regex>
 #include <sstream>
 
 namespace utils {

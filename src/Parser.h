@@ -55,29 +55,33 @@ private:
 
     PositionalList positional_list;
 
-    bool is_valid(char short_name, const std::string &long_name);
-    bool is_valid(const std::string &long_name);
+    bool is_name_valid(char short_name, const std::string &long_name);
+    bool is_name_valid(const std::string &long_name);
 
     std::vector<Flag> parse_flags(const std::vector<std::string> &cmd_line);
     std::vector<Option> parse_options(const std::vector<std::string> &cmd_line);
-    std::vector<Positional> parse_positional(
-        const std::vector<std::string> &cmd_line);
     std::vector<VectorOption> parse_vec_options(
         const std::vector<std::string> &cmd_line);
+    std::vector<Positional> parse_positional(
+        const std::vector<std::string> &cmd_line);
+
+    void extract_option(Option &option,
+                        const std::vector<std::string> &cmd_line, bool &found,
+                        bool &enough_values_given);
+
     void compose_help();
 
     bool is_shell_argument(const std::string &str)
     {
         return regex_match(str, std::regex("--?[a-zA-Z]*"));
     }
-    inline std::regex regex_for_long_name(std::string long_name);
-    inline std::regex regex_for_short_name(std::string short_name);
-    inline std::regex regex_for_short_name_flag(std::string short_name);
 
     void init_occupied_positions(std::vector<std::string> cmd_line);
     std::vector<Positional> collect_positionals(
         const std::vector<std::string> &cmd_line);
     bool are_positionals_valid(const std::vector<Positional> &positionals);
+    bool is_num_values_correct(int defined_num_values, int current_position,
+                               const std::vector<std::string> &cmd_line);
 };
 
 #endif /* PARSER_H_ */
