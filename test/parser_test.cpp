@@ -152,6 +152,26 @@ TEST(ParserTest, Option)
     EXPECT_FALSE(parser.errors_occured());
 }
 
+TEST(ParserTest, OptionNotRequiredNotGiven)
+{
+    Parser parser;
+    parser.add_option('f', "foo", "foo option, not required", false, "42");
+
+    std::vector<std::string> cmd_line = {"cppargsTEST"};
+
+    Args args = parser.parse_args(cmd_line);
+
+    EXPECT_TRUE(args["foo"]);
+    EXPECT_TRUE(args["f"]);
+
+    EXPECT_DOUBLE_EQ(42.0, args.get_value<double>("foo"));
+
+    EXPECT_FALSE(args["foobar"]);
+    EXPECT_FALSE(args["a"]);
+
+    EXPECT_FALSE(parser.errors_occured());
+}
+
 TEST(ParserTest, OptionValueNotGiven)
 {
     testing::internal::CaptureStderr();

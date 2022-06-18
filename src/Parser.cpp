@@ -223,7 +223,7 @@ std::vector<T> Parser::parse_options(const std::vector<std::string> &cmd_line,
             return {};
         }
 
-        if (not enough_values_given)
+        if (found and not enough_values_given)
         {
             print_error(ErrorMessages::invalid_num_of_values(
                 option.long_name, option.num_values));
@@ -247,6 +247,8 @@ void Parser::extract_option(OptionBase &option,
     {
         if (option.is_cmd_line_item(cmd_line[i]))
         {
+            found = true;
+
             if (is_num_values_correct(option.num_values, i, cmd_line))
             {
                 enough_values_given = true;
@@ -254,8 +256,6 @@ void Parser::extract_option(OptionBase &option,
             {
                 return;
             }
-
-            found = true;
 
             occupied_positions.at(i) = true;
             for (int j = 1; j <= option.num_values; j++)
