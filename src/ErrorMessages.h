@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 
-namespace ErrorMessages {
+namespace cppargs::ErrorMessages {
 
 inline void print_error(std::string msg) { std::cerr << msg; }
 
@@ -76,4 +76,4 @@ inline std::string postional_index_too_big()
     return "positional id to big!\n";
 }
 
-}  // namespace ErrorMessages
+}  // namespace cppargs::ErrorMessages

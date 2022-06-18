@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+namespace cppargs {
+
 bool Args::operator[](std::string name)
 {
     for (Flag &f : flags)
@@ -53,3 +55,5 @@ bool Args::is_positional_defined(std::string name)
     return std::any_of(positionals.begin(), positionals.end(),
                        [&name](auto pos) { return pos.long_name == name; });
 }
+
+}  // namespace cppargs

@@ -1,5 +1,7 @@
 #include "Parser.h"
 
+namespace cppargs {
+
 using ErrorMessages::print_error;
 using std::regex;
 
@@ -478,3 +480,5 @@ void Parser::compose_help()
 }
 
 void Parser::print_help() const { std::cout << help_message; }
+
+}  // namespace cppargs

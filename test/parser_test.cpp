@@ -4,6 +4,8 @@
 
 #include "ErrorMessages.h"
 
+using namespace cppargs;
+
 TEST(ParserTest, Flag)
 {
     Parser parser;

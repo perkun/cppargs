@@ -1,5 +1,4 @@
-#ifndef PARSER_H_
-#define PARSER_H_
+#pragma once
 
 #include <cstdio>
 #include <cstring>
@@ -7,6 +6,8 @@
 
 #include "Args.h"
 #include "ErrorMessages.h"
+
+namespace cppargs {
 
 class Parser
 {
@@ -79,8 +80,9 @@ private:
     std::vector<Positional> collect_positionals(
         const std::vector<std::string> &cmd_line);
     bool are_positionals_valid(const std::vector<Positional> &positionals);
-    static bool is_num_values_correct(int defined_num_values, int current_position,
-                               const std::vector<std::string> &cmd_line);
+    static bool is_num_values_correct(int defined_num_values,
+                                      int current_position,
+                                      const std::vector<std::string> &cmd_line);
 };
 
-#endif /* PARSER_H_ */
+}  // namespace cppargs

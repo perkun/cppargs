@@ -5,6 +5,7 @@
 #include "cppargs.h"
 
 using namespace std;
+using namespace cppargs;
 
 int main(int argc, char *argv[])
 {

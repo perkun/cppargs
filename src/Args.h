@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -6,6 +8,8 @@
 #include "Argument.h"
 #include "ErrorMessages.h"
 #include "utils.h"
+
+namespace cppargs {
 
 using ErrorMessages::print_error;
 
@@ -42,7 +46,7 @@ private:
     std::vector<VectorOption> vec_options;
     std::vector<Positional> positionals;
 
-//     Flag find_flag(std::string name);
+    //     Flag find_flag(std::string name);
     bool is_flag_defined(std::string name);
     bool is_option_defined(std::string name);
     bool is_vec_option_defined(std::string name);
@@ -133,3 +137,4 @@ std::vector<T> Args::get_all_positionals(int start_pos)
     }
     return return_values;
 }
+}  // namespace cppargs

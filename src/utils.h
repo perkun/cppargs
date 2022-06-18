@@ -1,7 +1,7 @@
 #include <regex>
 #include <sstream>
 
-namespace utils {
+namespace cppargs::utils {
 
 template <typename T>
 T convert_value(std::string source_value)
@@ -13,4 +13,4 @@ T convert_value(std::string source_value)
     return converted_value;
 }
 
-}  // namespace utils
+}  // namespace cppargs::utils

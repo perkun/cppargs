@@ -1,10 +1,10 @@
-#ifndef ARGUMENT_H_
-#define ARGUMENT_H_
+#pragma once
 
 #include <regex>
 #include <string>
 #include <vector>
 
+namespace cppargs {
 class CmdLineArgumentBase
 {
 public:
@@ -124,4 +124,4 @@ public:
 private:
 };
 
-#endif /* ARGUMENT_H_ */
+}  // namespace cppargs
