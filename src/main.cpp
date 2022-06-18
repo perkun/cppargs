@@ -47,26 +47,38 @@ int main(int argc, char *argv[])
 
     // check if arument was given
     // a flag
-    if (args["count"]) cout << "You can count on me!" << endl;
+    if (args["count"])
+    {
+        cout << "You can count on me!" << endl;
+    }
     // others too
-    if (args["pos"]) cout << "position specified" << endl;
+    if (args["pos"])
+    {
+        cout << "position specified" << endl;
+    }
 
-    string in_filename = args.get_value<string>("input");
+    auto in_filename = args.get_value<string>("input");
     cout << in_filename << endl;
 
     vector<double> pos = args.get_vec_values<double>("pos");
-    for (double d : pos) cout << d << ", ";
+    for (double d : pos)
+    {
+        cout << d << ", ";
+    }
     cout << endl;
 
     // get first positional argument
-    string name = args.get_positional<string>(0);
+    auto name = args.get_positional<string>(0);
 
     // or by name (if defined earlier)
-    string last_name = args.get_positional<string>("last");
+    auto last_name = args.get_positional<string>("last");
     cout << "Last name: " << last_name << endl;
 
     // or get all of them (including program's name)
-    for (string s : args.get_all_positionals<string>()) cout << s << endl;
+    for (string s : args.get_all_positionals<string>())
+    {
+        cout << s << endl;
+    }
 
     // or all of them starting from position, e.g. get all the FILES
     vector<string> files = args.get_all_positionals<string>(3);
