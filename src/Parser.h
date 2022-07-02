@@ -59,6 +59,7 @@ private:
     bool is_name_valid(const std::string &long_name);
 
     std::vector<Flag> parse_flags(const std::vector<std::string> &cmd_line);
+
     template <typename T>
     std::vector<T> parse_options(const std::vector<std::string> &cmd_line,
                                  const std::vector<T> &user_defined_options);

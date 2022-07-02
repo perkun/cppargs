@@ -196,7 +196,7 @@ std::vector<Flag> Parser::parse_flags(const std::vector<std::string> &cmd_line)
             if (flag.is_cmd_line_item(cmd_line[i]))
             {
                 flag.status = true;
-                occupied_positions[i] = true;
+                occupied_positions.at(i) = true;
             }
         }
         flags.push_back(flag);
@@ -263,7 +263,7 @@ void Parser::extract_option(OptionBase &option,
             for (int j = 1; j <= option.num_values; j++)
             {
                 option.set_value(cmd_line[i + j]);
-                occupied_positions[i + j] = true;
+                occupied_positions.at(i + j) = true;
             }
         }
     }
@@ -309,7 +309,7 @@ std::vector<Positional> Parser::collect_positionals(
     unsigned int num_processed_positionals = 0;
     for (int i = 1; i < occupied_positions.size(); i++)
     {
-        if (not occupied_positions[i] and (not is_shell_argument(cmd_line[i])))
+        if (not occupied_positions.at(i) and (not is_shell_argument(cmd_line.at(i))))
         {
             std::string long_name =
                 num_processed_positionals < user_defined_args.positionals.size()
@@ -318,7 +318,7 @@ std::vector<Positional> Parser::collect_positionals(
                           .long_name
                     : "";
 
-            positionals.emplace_back(long_name, cmd_line[i]);
+            positionals.emplace_back(long_name, cmd_line.at(i));
             num_processed_positionals++;
         }
     }

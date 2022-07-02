@@ -17,6 +17,19 @@ public:
     std::string long_name, description;
     int num_values = 0;
 
+    bool is_cmd_line_item(const std::string &cmd_line_item)
+    {
+        return regex_match(cmd_line_item, regex_for_long_name()) ||
+               regex_match(cmd_line_item, regex_for_short_name());
+    }
+
+    bool operator==(std::string name) const
+    {
+        return (long_name == name or
+                (not short_name.empty() and short_name == name));
+    }
+
+protected:
     std::regex regex_for_long_name() const
     {
         return std::regex("--" + long_name);
@@ -29,12 +42,6 @@ public:
             return std::regex("-" + short_name);
         }
         return {};
-    }
-
-    bool is_cmd_line_item(const std::string &cmd_line_item)
-    {
-        return regex_match(cmd_line_item, regex_for_long_name()) ||
-               regex_match(cmd_line_item, regex_for_short_name());
     }
 };
 
@@ -68,6 +75,7 @@ public:
     {}
     bool required;
     virtual void set_value(std::string val) = 0;
+    virtual bool has_value() = 0;
 };
 
 class Option : public OptionBase
@@ -81,9 +89,13 @@ public:
     {
         num_values = 1;
     }
-    std::string value;
 
+    std::string get_value() { return value; }
     void set_value(std::string val) override { value = val; }
+    bool has_value() override { return not value.empty(); }
+
+private:
+    std::string value;
 };
 
 class VectorOption : public OptionBase
@@ -96,11 +108,12 @@ public:
         this->num_values = num_values;
     }
 
-    std::vector<std::string> value_vec;
-
+    std::vector<std::string> get_values() { return value_vec; }
     void set_value(std::string val) override { value_vec.push_back(val); }
+    bool has_value() override { return not value_vec.empty(); }
 
 private:
+    std::vector<std::string> value_vec;
 };
 
 class Positional : public CmdLineArgumentBase

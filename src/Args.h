@@ -66,16 +66,9 @@ T Args::get_value(std::string name)
 
     for (Option &opt : options)
     {
-        if (opt.long_name == name && not opt.value.empty())
+        if (opt.has_value() and opt == name)
         {
-            value = opt.value;
-        }
-        if (not opt.short_name.empty())
-        {
-            if (opt.short_name == name && not opt.value.empty())
-            {
-                value = opt.value;
-            }
+            value = opt.get_value();
         }
     }
     return utils::convert_value<T>(value);
@@ -93,11 +86,9 @@ std::vector<T> Args::get_vec_values(std::string name)
     std::vector<T> return_values;
     for (VectorOption &opt : vec_options)
     {
-        if ((opt.long_name == name && not opt.value_vec.empty()) or
-            ((not opt.short_name.empty()) and
-             (opt.short_name == name && not opt.value_vec.empty())))
+        if (opt.has_value() and opt == name)
         {
-            for (std::string value : opt.value_vec)
+            for (std::string value : opt.get_values())
             {
                 return_values.push_back(utils::convert_value<T>(value));
             }
