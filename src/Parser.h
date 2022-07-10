@@ -66,8 +66,8 @@ private:
     std::vector<Positional> parse_positional(
         const std::vector<std::string> &cmd_line);
 
-    void extract_option(OptionBase &option,
-                        const std::vector<std::string> &cmd_line, bool &found,
+    void extract_option(const std::vector<std::string> &cmd_line,
+                        OptionBase &option, bool &found,
                         bool &enough_values_given);
 
     void compose_help();

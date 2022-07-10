@@ -155,9 +155,9 @@ Args Parser::parse_args(const std::vector<std::string> &cmd_line)
         return {};
     }
 
-    args.options = parse_options<Option>(cmd_line, user_defined_args.options);
+    args.options = parse_options(cmd_line, user_defined_args.options);
     args.vec_options =
-        parse_options<VectorOption>(cmd_line, user_defined_args.vec_options);
+        parse_options(cmd_line, user_defined_args.vec_options);
     args.positionals = parse_positional(cmd_line);  // has to be last!!
 
     // TODO: extract to func
@@ -216,7 +216,7 @@ std::vector<T> Parser::parse_options(const std::vector<std::string> &cmd_line,
         bool found = false;
         bool enough_values_given = false;
 
-        extract_option(option, cmd_line, found, enough_values_given);
+        extract_option(cmd_line, option, found, enough_values_given);
 
         if (option.required && not found)
         {
@@ -238,9 +238,9 @@ std::vector<T> Parser::parse_options(const std::vector<std::string> &cmd_line,
     return options;
 }
 
-void Parser::extract_option(OptionBase &option,
-                            const std::vector<std::string> &cmd_line,
-                            bool &found, bool &enough_values_given)
+void Parser::extract_option(const std::vector<std::string> &cmd_line,
+                            OptionBase &option, bool &found,
+                            bool &enough_values_given)
 {
     found = false;
     enough_values_given = false;
@@ -309,7 +309,8 @@ std::vector<Positional> Parser::collect_positionals(
     unsigned int num_processed_positionals = 0;
     for (int i = 1; i < occupied_positions.size(); i++)
     {
-        if (not occupied_positions.at(i) and (not is_shell_argument(cmd_line.at(i))))
+        if (not occupied_positions.at(i) and
+            (not is_shell_argument(cmd_line.at(i))))
         {
             std::string long_name =
                 num_processed_positionals < user_defined_args.positionals.size()

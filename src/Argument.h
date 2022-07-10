@@ -2,6 +2,7 @@
 
 #include <regex>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace cppargs {
@@ -11,7 +12,7 @@ public:
     CmdLineArgumentBase() = default;
     CmdLineArgumentBase(std::string short_name, std::string long_name,
                         std::string description)
-        : short_name(short_name), long_name(long_name), description(description)
+        : short_name(std::move(short_name)), long_name(std::move(long_name)), description(std::move(description))
     {}
     std::string short_name;
     std::string long_name, description;

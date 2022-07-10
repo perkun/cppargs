@@ -41,16 +41,14 @@ public:
 
 private:
     bool is_defined(std::string name);
+    template <typename CmdLineArgument>
+    bool is_argument_defined(const std::vector<CmdLineArgument> &args,
+                             std::string name);
+
     std::vector<Flag> flags;
     std::vector<Option> options;
     std::vector<VectorOption> vec_options;
     std::vector<Positional> positionals;
-
-    //     Flag find_flag(std::string name);
-    bool is_flag_defined(std::string name);
-    bool is_option_defined(std::string name);
-    bool is_vec_option_defined(std::string name);
-    bool is_positional_defined(std::string name);
 };
 
 template <typename T>
@@ -106,26 +104,36 @@ T Args::get_positional(int position)
 template <typename T>
 T Args::get_positional(std::string name)
 {
-    for (Positional &p : positionals)
+    auto it = std::find_if(positionals.begin(), positionals.end(),
+                           [&name](Positional &p) { return p == name; });
+
+    if (it != positionals.end())
     {
-        if (p.long_name == name)
-        {
-            return utils::convert_value<T>(p.value);
-        }
+        return utils::convert_value<T>(it->value);
     }
 
     print_error(ErrorMessages::positional_not_given(name));
-    return T();
+    return {};
 }
 
 template <typename T>
 std::vector<T> Args::get_all_positionals(int start_pos)
 {
     std::vector<T> return_values;
+    return_values.reserve(positionals.size());
     for (int i = start_pos; i < positionals.size(); i++)
     {
         return_values.push_back(get_positional<T>(i));
     }
     return return_values;
 }
+
+template <typename CmdLineArgument>
+bool Args::is_argument_defined(const std::vector<CmdLineArgument> &args,
+                               std::string name)
+{
+    return std::any_of(args.begin(), args.end(),
+                       [&name](const CmdLineArgument &arg) { return arg == name; });
+}
+
 }  // namespace cppargs
